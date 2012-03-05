@@ -67,9 +67,7 @@ int main( int argc, char **argv ) {
         machine = "main";
 
     e.read( source );
-    Instruction *inst = e.make_inst( "main" );
-    // State *state = e.make_state_seq( machine );
-
+    State *state = e.make_state_seq( machine );
     //    Language_C l( true );
     //    l.write( std::cout, state );
 }

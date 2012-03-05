@@ -3,6 +3,7 @@
 
 #include "Stream.h"
 #include <sstream>
+#include <fstream>
 
 std::ostream &dot_out( std::ostream &os, const char *beg, int lim = -1 );
 std::ostream &dot_out( std::ostream &os, const char *beg, const char *end, int lim = -1 );

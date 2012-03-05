@@ -52,6 +52,9 @@ public:
         return false;
     }
 
+    void insert( int index, const T &val ) {
+        data.insert( data.begin() + index, 1, val );
+    }
 
     bool contains( const T &val ) const {
         for( int i = 0; i < size(); ++i )

@@ -45,6 +45,12 @@ Instruction::Instruction( const Lexem *lex, double freq ) {
 Instruction::~Instruction() {
 }
 
+
+bool Instruction::get_next_conds( Vec<const Instruction *> &conds, int nb_incc_allowed ) const {
+    ++cur_op_id;
+    _get_next_conds_rec( conds, nb_incc_allowed );
+}
+
 int Instruction::display_dot( const char *f, const char *prg ) const {
     std::ofstream os( f );
 
@@ -72,8 +78,13 @@ std::ostream &Instruction::write_label( std::ostream &os ) const {
     return os << ".";
 }
 
+bool Instruction::branching_only() const {
+    return not cond and not incc and not code.size() and not func;
+}
+
+
 bool Instruction::is_an_action() const {
-    return cond or func;
+    return code.size() or func;
 }
 
 int Instruction::ascii_val() const {
@@ -91,6 +102,28 @@ Instruction &Instruction::operator<<( Instruction *n ) {
         n->prev << this;
     }
     return *this;
+}
+
+bool Instruction::can_lead_to_an_incc( const Vec<const Instruction *> &lst ) {
+    ++cur_op_id;
+    for( int i = 0; i < lst.size(); ++i )
+        if ( lst[ i ]->_can_lead_to_an_incc_rec() )
+            return true;
+    return false;
+}
+
+bool Instruction::_can_lead_to_an_incc_rec() const {
+    if ( op_id == cur_op_id )
+        return false;
+    op_id = cur_op_id;
+
+    if ( incc )
+        return true;
+
+    for( int i = 0; i < next.size(); ++i )
+        if ( next[ i ]->_can_lead_to_an_incc_rec() )
+            return true;
+    return false;
 }
 
 void Instruction::_write_dot_rec( std::ostream &os ) const {
@@ -112,19 +145,44 @@ void Instruction::_write_dot_rec( std::ostream &os ) const {
     }
 }
 
-bool Instruction::_surely_leads_to_the_end_rec( const Cond *cond, int nb_incc_allowed ) const {
+bool Instruction::_get_next_conds_rec( Vec<const Instruction *> &conds, int nb_incc_allowed ) const {
+    if ( op_id == cur_op_id )
+        return tmp;
+    op_id = cur_op_id;
+
+    if ( incc and nb_incc_allowed-- == 0 )
+        return tmp = false;
+
+    if ( cond ) {
+        conds << this;
+        return tmp = true;
+    } else if ( next.size() ) {
+        bool ok = true;
+        for( int i = 0; i < next.size(); ++i )
+            ok &= next[ i ]->_get_next_conds_rec( conds, nb_incc_allowed );
+        return tmp = ok;
+    }
+
+    return tmp = false;
+}
+
+bool Instruction::_surely_leads_to_the_end_rec( const Cond *_cond, int nb_incc_allowed ) const {
     if ( op_id == cur_op_id )
         return false;
     op_id = cur_op_id;
+
+    if ( cond and ( not _cond or not _cond->included_in( *cond ) ) )
+        return false;
 
     if ( not next.size() )
         return true;
 
     for( int i = 0; i < next.size(); ++i )
-        if ( next[ i ]->_surely_leads_to_the_end_rec( cond, nb_incc_allowed ) )
+        if ( next[ i ]->_surely_leads_to_the_end_rec( _cond, nb_incc_allowed ) )
             return true;
     return false;
 }
+
 
 void Instruction::_get_children_rec( Vec<Instruction *> &vec ) {
     if ( op_id == cur_op_id )

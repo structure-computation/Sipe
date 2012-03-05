@@ -34,16 +34,20 @@ void Engine::read( const char *provenance, const char *data, bool dl_allowed ) {
     }
 }
 
-Instruction *Engine::make_inst( const char *machine ) {
+Instruction *Engine::make_instruction_seq( const char *machine ) {
     Instruction *res = instruction_maker.make( machine );
     if ( res and di )
         res->display_dot();
     return res;
 }
 
-//State *Engine::make_state_seq( const char *machine ) {
-//    State *res = state_maker.make( make_inst( machine ), ws );
-//    if ( res and ds )
-//        res->display_dot();
-//    return res;
-//}
+State *Engine::make_state_seq( const Instruction *inst ) {
+    State *res = state_maker.make( inst, ws );
+    if ( res and ds )
+        res->display_dot();
+    return res;
+}
+
+State *Engine::make_state_seq( const char *machine ) {
+    return make_state_seq( make_instruction_seq( machine ) );
+}

@@ -35,3 +35,10 @@ tests/test.sipe.py
 Makefile
 src/Sipe/Func.h
 src/Sipe/Func.cpp
+src/Sipe/StateMaker.h
+src/Sipe/StateMaker.cpp
+src/Sipe/State.h
+src/Sipe/State.cpp
+src/Sipe/Paths.h
+src/Sipe/Smp.h
+src/Sipe/Smp.cpp
