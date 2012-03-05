@@ -34,6 +34,10 @@ String Smp::bid() const {
     return os.str();
 }
 
+void Smp::join_branches( int j, int i ) {
+    paths.join_branches( j, i );
+}
+
 void Smp::remove_branch( int index ) {
     paths.remove( index );
 }
@@ -52,7 +56,6 @@ int Smp::next( int index ) {
 std::ostream &operator<<( std::ostream &os, const Smp &p ) {
     for( int i = 0; i < p.paths.ends.size(); ++i )
         os << ( i ? " " : "" ) << *p.paths.ends[ i ]->data;
-
 
     if ( p.cond )
         os << " [cond=" << *p.cond << "]";

@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include "Instruction.h"
+#include "Paths.h"
 
 /**
 */
@@ -20,6 +21,7 @@ public:
     int display_dot( const char *f = ".state.dot", const char *prg = 0 ) const;
 
     //
+    Paths<const Instruction *> paths;
     const Instruction *action;
     Vec<State *> prev;
     bool   set_mark;

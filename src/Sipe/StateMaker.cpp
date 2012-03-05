@@ -76,6 +76,7 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
 
 State *StateMaker::_new_State( const Smp &p ) {
     State *res = new State;
+    res->paths = p.paths;
     created[ p.bid() ] = res;
     return res;
 }
@@ -95,27 +96,27 @@ State *StateMaker::_same_bid( Smp &p ) {
 }
 
 State *StateMaker::_rm_twice( Smp &p ) {
-//    for( int i = 1; i < p.ok.size(); ++i ) {
-//        for( int j = 0; j < i; ++j ) {
-//            if ( p.ok[ j ] ==  p.ok[ i ] ) {
-//                p.ok_remove( i );
-//                return make( p, "rm_twice" );
-//            }
-//        }
-//    }
+    for( int i = 1; i < p.paths.ends.size(); ++i ) {
+        for( int j = 0; j < i; ++j ) {
+            if ( p.paths.ends[ j ]->data == p.paths.ends[ i ]->data ) {
+                p.join_branches( j, i );
+                return _make_rec( p, "rm_twice" );
+            }
+        }
+    }
 
     return 0;
 }
 
 State *StateMaker::_use_pend( Smp &p ) {
-//    if ( p.pending and p.ok.size() == 1 ) {
-//        State *res = new_State( p );
-//        res->use_mark = p.pending;
-//        p.pending = 0;
-//        res->add_next( make( p, "use_pend" ) );
-//        use_mark_stack << res;
-//        return res;
-//    }
+    if ( p.pending and p.paths.ends.size() == 1 ) {
+        State *res = _new_State( p );
+        res->use_mark = p.pending;
+        p.pending = 0;
+        res->add_next( _make_rec( p, "use_pend" ) );
+        use_mark_stack << res;
+        return res;
+    }
 
     return 0;
 }

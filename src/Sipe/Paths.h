@@ -85,6 +85,17 @@ struct Paths {
         ends.remove( index );
     }
 
+    void join_branches( int a, int b ) {
+        for( int i = 0; i < ends[ b ]->prev.size(); ++i ) {
+            Item *p = ends[ b ]->prev[ i ];
+            if ( not ends[ a ]->prev.contains( p ) ) {
+                p->next.replace( ends[ b ], ends[ a ] );
+                ends[ a ]->prev << p;
+            }
+        }
+        remove( b );
+    }
+
     Vec<Item *> to_del;
     Vec<Item *> begs;
     Vec<Item *> ends;

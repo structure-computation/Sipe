@@ -78,6 +78,12 @@ public:
                 operator<<( old[ i ] );
     }
 
+    void replace( const T &a, const T &b ) { ///< replace index i by items of vec
+        for( int i = 0; i < size(); ++i )
+            if ( data[ i ] == a )
+                data[ i ] = b;
+    }
+
     bool operator==( const Vec &vec ) const {
         if ( vec.size() != size() )
             return false;

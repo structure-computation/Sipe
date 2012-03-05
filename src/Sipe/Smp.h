@@ -14,6 +14,7 @@ public:
     String bid() const;
     int  next( int index );
     void remove_branch( int index );
+    void join_branches( int j, int i );
     bool surely_leads_to_the_end( int index );
 
     Paths<const Instruction *> paths;

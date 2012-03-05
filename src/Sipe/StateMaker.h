@@ -29,6 +29,7 @@ protected:
     State *_use_next( Smp &p );
 
     typedef std::map<String,State *> TC;
+    Vec<State *> use_mark_stack;
     TC created;
 };
 
