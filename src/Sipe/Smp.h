@@ -3,7 +3,6 @@
 
 #include "Instruction.h"
 #include "State.h"
-#include "Paths.h"
 
 /**
 */
@@ -15,9 +14,11 @@ public:
     int  next( int index );
     void remove_branch( int index );
     void join_branches( int j, int i );
+    void init( const Instruction *inst );
     bool surely_leads_to_the_end( int index );
 
-    Paths<const Instruction *> paths;
+    Vec<const Instruction *> visited;
+    Vec<const Instruction *> ok;
     String display_prefix;
     bool display_steps;
     bool allow_incc;

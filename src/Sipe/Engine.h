@@ -30,6 +30,7 @@ protected:
     StateMaker state_maker;
     LexemMaker lexem_maker;
     ErrorList error_list;
+    Vec<State *> to_del;
     Source *sources;
 };
 

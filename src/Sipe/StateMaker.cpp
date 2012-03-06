@@ -1,3 +1,4 @@
+#include "StateCloner.h"
 #include "StateMaker.h"
 #include "Smp.h"
 
@@ -18,17 +19,36 @@ struct SortVecInst {
 };
 
 
-StateMaker::StateMaker() {
+StateMaker::StateMaker( Vec<State *> &to_del ) : to_del( to_del ) {
 }
 
 State *StateMaker::make( const Instruction *inst, bool ws ) {
     Smp p;
     p.allow_incc = false;
-    p.paths.init( inst );
+    p.ok << inst;
     p.display_steps = ws;
     State *res = _make_rec( p, "init" );
 
-    return res;
+    // restart state seqs
+//    while ( use_mark_stack.size() ) {
+//        State *dst = use_mark_stack.pop();
+//        State *src = dst->use_mark->next[ 0 ].s; // after the set_mark
+
+//        StateCloner sc( to_del, use_mark_stack );
+//        State *nst = sc.make( src, dst );
+//        if ( nst->has_something_to_execute( dst->has_something_to_execute( false ) ) ) {
+//            dst->insert_between_this_and_next( nst );
+//        } else {
+//            dst->rem_mark = dst->use_mark;
+//            dst->use_mark = 0;
+//        }
+
+//        //        std::ostringstream ss;
+//        //        ss << ".state_" << nst << ".dot";
+//        //        nst->display_dot( ss.str().c_str() );
+//    }
+
+    return res->simplified();
 }
 
 State *StateMaker::_make_rec( Smp &p, const char *step ) {
@@ -58,7 +78,7 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
     // if some branches can be removed due to cond in p
     if ( State *res = _rm_bcond( p ) ) return res;
 
-    // if we have a cond in p and in p.paths.ends and this cond is ok
+    // if we have a cond in p and in p.ok and this cond is ok
     if ( State *res = _jmp_cond( p ) ) return res;
 
     // if we have code
@@ -76,7 +96,8 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
 
 State *StateMaker::_new_State( const Smp &p ) {
     State *res = new State;
-    res->paths = p.paths;
+    res->visited = p.visited;
+    res->instructions = p.ok;
     created[ p.bid() ] = res;
     return res;
 }
@@ -96,9 +117,9 @@ State *StateMaker::_same_bid( Smp &p ) {
 }
 
 State *StateMaker::_rm_twice( Smp &p ) {
-    for( int i = 1; i < p.paths.ends.size(); ++i ) {
+    for( int i = 1; i < p.ok.size(); ++i ) {
         for( int j = 0; j < i; ++j ) {
-            if ( p.paths.ends[ j ]->data == p.paths.ends[ i ]->data ) {
+            if ( p.ok[ j ] == p.ok[ i ] ) {
                 p.join_branches( j, i );
                 return _make_rec( p, "rm_twice" );
             }
@@ -109,7 +130,7 @@ State *StateMaker::_rm_twice( Smp &p ) {
 }
 
 State *StateMaker::_use_pend( Smp &p ) {
-    if ( p.pending and p.paths.ends.size() == 1 ) {
+    if ( p.pending and p.ok.size() == 1 ) {
         State *res = _new_State( p );
         res->use_mark = p.pending;
         p.pending = 0;
@@ -123,11 +144,11 @@ State *StateMaker::_use_pend( Smp &p ) {
 
 
 State *StateMaker::_only_end( Smp &p ) {
-    if ( p.paths.ends.size() == 1 and p.paths.ends[ 0 ]->data->end ) {
+    if ( p.ok.size() == 1 and p.ok[ 0 ]->end ) {
         if ( p.display_steps )
             coutn << p.display_prefix << "end";
         State *res = _new_State( p );
-        res->end = p.paths.ends[ 0 ]->data->end;
+        res->end = p.ok[ 0 ]->end;
         return res;
     }
 
@@ -135,9 +156,9 @@ State *StateMaker::_only_end( Smp &p ) {
 }
 
 State *StateMaker::_prior_br( Smp &p ) {
-    for( int i = 0; i < p.paths.ends.size() - 1; ++i ) {
+    for( int i = 0; i < p.ok.size() - 1; ++i ) {
         if ( p.surely_leads_to_the_end( i ) ) {
-            for( int j = p.paths.ends.size() - 1; j > i; --j )
+            for( int j = p.ok.size() - 1; j > i; --j )
                 p.remove_branch( j );
             return _make_rec( p, "prior_br" );
         }
@@ -149,15 +170,15 @@ State *StateMaker::_prior_br( Smp &p ) {
 State *StateMaker::_has_cond( Smp &p ) {
     if ( not p.cond ) {
         // if only one branch -> we know that p will be ok
-        if ( p.paths.ends.size() == 1 and p.paths.ends[ 0 ]->data->cond ) {
+        if ( p.ok.size() == 1 and p.ok[ 0 ]->cond ) {
             p.next( 0 );
             return _make_rec( p, "aut_cond" );
         }
 
         // get all the coming conditions
         Vec<const Instruction *> nc;
-        for( int i = 0; i < p.paths.ends.size(); ++i )
-            p.paths.ends[ i ]->data->get_next_conds( nc, p.allow_incc == false );
+        for( int i = 0; i < p.ok.size(); ++i )
+            p.ok[ i ]->get_next_conds( nc, p.allow_incc == false );
 
         if ( nc.size() ) {
             // list of inst for each char num
@@ -217,9 +238,9 @@ State *StateMaker::_has_cond( Smp &p ) {
 
 State *StateMaker::_rm_bcond( Smp &p ) {
     if ( p.cond ) {
-        for( int i = 0; i < p.paths.ends.size(); ++i ) {
+        for( int i = 0; i < p.ok.size(); ++i ) {
             Vec<const Instruction *> nc;
-            if ( not p.paths.ends[ i ]->data->get_next_conds( nc, p.allow_incc == false ) )
+            if ( not p.ok[ i ]->get_next_conds( nc, p.allow_incc == false ) )
                 continue;
 
             if ( nc.size() ) {
@@ -242,8 +263,8 @@ State *StateMaker::_rm_bcond( Smp &p ) {
 
 State *StateMaker::_jmp_cond( Smp &p ) {
     if ( p.cond ) {
-        for( int i = 0; i < p.paths.ends.size(); ++i ) {
-            const Cond *cond = p.paths.ends[ i ]->data->cond.get_ptr();
+        for( int i = 0; i < p.ok.size(); ++i ) {
+            const Cond *cond = p.ok[ i ]->cond.get_ptr();
             if ( cond and p.cond->included_in( *cond ) ) {
                 p.next( i );
                 return _make_rec( p, "jmp_cond" );
@@ -255,10 +276,10 @@ State *StateMaker::_jmp_cond( Smp &p ) {
 }
 
 State *StateMaker::_jmp_code( Smp &p ) {
-    for( int i = 0; i < p.paths.ends.size(); ++i ) {
-        if ( p.paths.ends[ i ]->data->is_an_action() ) {
+    for( int i = 0; i < p.ok.size(); ++i ) {
+        if ( p.ok[ i ]->is_an_action() ) {
             // add a mark if necessary (-> p.pending)
-            if ( p.paths.ends.size() > 1 and not p.pending ) {
+            if ( p.ok.size() > 1 and not p.pending ) {
                 State *res = _new_State( p );
                 res->set_mark = true;
                 p.pending = res;
@@ -268,7 +289,7 @@ State *StateMaker::_jmp_code( Smp &p ) {
 
             // else (or after that), create a state with the instructions
             State *res = _new_State( p );
-            res->action = p.paths.ends[ i ]->data;
+            res->action_num = i;
             p.next( i );
 
             res->add_next( _make_rec( p, "jmp_code" ) );
@@ -281,26 +302,26 @@ State *StateMaker::_jmp_code( Smp &p ) {
 
 State *StateMaker::_jmp_incc( Smp &p ) {
     bool mi = true, ma = false;
-    for( int i = 0; i < p.paths.ends.size(); ++i ) {
-        if ( p.paths.ends[ i ]->data->next.size() ) {
-            mi &= p.paths.ends[ i ]->data->incc;
-            ma |= p.paths.ends[ i ]->data->incc;
+    for( int i = 0; i < p.ok.size(); ++i ) {
+        if ( p.ok[ i ]->next.size() ) {
+            mi &= p.ok[ i ]->incc;
+            ma |= p.ok[ i ]->incc;
         }
     }
 
     if ( mi and ma ) {
         // incc not allowed ?
         if ( not p.allow_incc ) {
-            for( int i = 0; i < p.paths.ends.size(); ++i )
-                if ( p.paths.ends[ i ]->data->next.size() )
+            for( int i = 0; i < p.ok.size(); ++i )
+                if ( p.ok[ i ]->next.size() )
                     i += p.next( i ) - 1;
             p.allow_incc = true;
             return _make_rec( p, "jmp_incd" );
         }
 
         State *s = _new_State( p );
-        for( int i = 0; i < p.paths.ends.size(); ++i )
-            if ( p.paths.ends[ i ]->data->next.size() )
+        for( int i = 0; i < p.ok.size(); ++i )
+            if ( p.ok[ i ]->next.size() )
                 i += p.next( i ) - 1;
         p.cond.clear();
 
@@ -313,8 +334,8 @@ State *StateMaker::_jmp_incc( Smp &p ) {
 }
 
 State *StateMaker::_use_next( Smp &p ) {
-    for( int i = 0; i < p.paths.ends.size(); ++i ) {
-        if ( p.paths.ends[ i ]->data->branching_only() and not p.paths.ends[ i ]->data->end ) {
+    for( int i = 0; i < p.ok.size(); ++i ) {
+        if ( p.ok[ i ]->branching_only() and not p.ok[ i ]->end ) {
             p.next( i );
             return _make_rec( p, "use_next" );
         }

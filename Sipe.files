@@ -42,3 +42,7 @@ src/Sipe/State.cpp
 src/Sipe/Paths.h
 src/Sipe/Smp.h
 src/Sipe/Smp.cpp
+src/Sipe/StateCloner.h
+src/Sipe/StateCloner.cpp
+src/Sipe/Scp.h
+src/Sipe/Scp.cpp

@@ -9,7 +9,7 @@ struct Smp;
 */
 class StateMaker {
 public:
-    StateMaker();
+    StateMaker( Vec<State *> &to_del );
     State *make( const Instruction *inst, bool ws );
 
 protected:
@@ -30,6 +30,7 @@ protected:
 
     typedef std::map<String,State *> TC;
     Vec<State *> use_mark_stack;
+    Vec<State *> &to_del;
     TC created;
 };
 
