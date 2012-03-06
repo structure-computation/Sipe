@@ -8,6 +8,7 @@ State::State() {
     op_id = 0;
 
     action_num = -1;
+    action   = 0;
     set_mark = 0;
     use_mark = 0;
     rem_mark = 0;
@@ -55,6 +56,8 @@ std::ostream &State::write_label( std::ostream &os, int lim ) const {
         os << "?";
     if ( end )
         os << ( end == 2 ? "KO" : "OK" );
+    if ( action )
+        action->write_label( os );
 
     if ( action_num >= 0 ) {
         for( int i = 0; i < instructions.size(); ++i ) {
@@ -108,7 +111,6 @@ State *State::simplified() {
         if ( ch[ i ]->end )
             ends << ch[ i ];
     }
-    P( ends.size() );
 
     // for each state, look if it leads to nothing interesting but the end
     for( int i = 0; i < ch.size(); ++i ) {
@@ -125,7 +127,6 @@ State *State::simplified() {
                 }
             }
 
-            P( accessible_ends.size() );
             if ( accessible_ends.size() == 1 )
                 ch[ i ]->op_mp = accessible_ends[ 0 ];
         }
@@ -245,6 +246,7 @@ bool State::_is_interesting( bool take_incc_into_account, bool take_nb_next_into
             ( action_num == 0 and instructions.size() == 1 and not instructions[ 0 ]->end ) or
             ( next.size() != 1 and take_nb_next_into_account ) or
             ( incc and take_incc_into_account ) or
+            action or
             set_mark or
             use_mark or
             rem_mark;

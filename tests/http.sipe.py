@@ -23,6 +23,6 @@ e400 = { P( "ERROR 400: bad request type" ); }
 
 main = 
     #_set_strn[ 'Http' ]
-    'GET ' | e400
+    'GET ' | 'PUT ' | 'POST ' | e400
     #get | post | put | e400
     

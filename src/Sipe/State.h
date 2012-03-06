@@ -25,11 +25,12 @@ public:
     void insert_between_this_and_next( State *nst );
     std::ostream &write_label( std::ostream &os, int lim = -1 ) const;
     bool has_something_to_execute( bool take_incc_into_account ) const;
-    int display_dot( const char *f = ".state.dot", const char *prg = 0 ) const;
+    int  display_dot( const char *f = ".state.dot", const char *prg = 0 ) const;
 
     //
     Vec<const Instruction *> instructions;
     std::set<const Instruction *> visited;
+    const Instruction *action; ///<
     Vec<State *> prev;
     bool   set_mark;
     State *use_mark;

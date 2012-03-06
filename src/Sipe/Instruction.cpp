@@ -92,6 +92,22 @@ bool Instruction::is_an_action() const {
     return code.size() or func;
 }
 
+static inline bool lower ( char a ) { return a >= 'a' and a <= 'z'; }
+static inline bool upper ( char a ) { return a >= 'A' and a <= 'Z'; }
+static inline bool number( char a ) { return a >= '0' and a <= '9'; }
+static inline bool letter( char a ) { return lower ( a ) or upper ( a ); }
+static inline bool begvar( char a ) { return letter( a ) or a == '_'  ; }
+static inline bool cntvar( char a ) { return begvar( a ) or number( a ); }
+
+bool Instruction::needs_data() const {
+    if ( code.size() ) {
+        for( int res = code.find( "data" ); res >= 0; res = code.find( "data", res + 4 ) )
+            if ( ( res == 0 or not cntvar( code[ res - 1 ] ) ) and ( res + 4 == code.size() or not cntvar( code[ res + 4 ] ) ) )
+                return true;
+    }
+    return false;
+}
+
 int Instruction::ascii_val() const {
     return cond and cond->nz() == 1 ? cond->first_nz() : -1;
 }

@@ -33,6 +33,7 @@ public:
     Instruction &operator<<( Instruction *n ); ///< add to next
     bool branching_only() const;
     bool is_an_action() const;
+    bool needs_data() const; ///< true if data is needed for the action
     int ascii_val() const;
 
     static bool can_lead_to_an_incc( const Vec<const Instruction *> &lst );

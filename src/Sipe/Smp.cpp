@@ -12,8 +12,12 @@ String Smp::bid() const {
     for( int i = 0; i < ok.size(); ++i )
         os << ( i ? " I" : "I" ) << ok[ i ];
 
+    for( int i = 0; i < paction.size(); ++i )
+        os << " P" << paction[ i ];
+
     if ( pending )
         os << " [pending=" << pending << "]";
+
 
     if ( cond ) {
         Vec<const Instruction *> nc;

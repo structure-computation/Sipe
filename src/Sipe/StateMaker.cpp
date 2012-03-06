@@ -62,6 +62,9 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
     // the same inst appears twice ?
     if ( State *res = _rm_twice( p ) ) return res;
 
+    // we have pending code / func wo data and we know that all the branches will go to the end
+    if ( State *res = _use_pact( p ) ) return res;
+
     // we have pending code / func and we know that all the branches will go to the end
     if ( State *res = _use_pend( p ) ) return res;
 
@@ -124,6 +127,24 @@ State *StateMaker::_rm_twice( Smp &p ) {
                 return _make_rec( p, "rm_twice" );
             }
         }
+    }
+
+    return 0;
+}
+
+State *StateMaker::_use_pact( Smp &p ) {
+    if ( p.paction.size() and p.ok.size() == 1 ) {
+        std::set<const Instruction *> allowed = p.visited;
+        allowed.insert( p.ok[ 0 ] );
+        if ( p.paction[ 0 ]->can_lead_to( p.ok[ 0 ], allowed ) ) {
+            State *res = _new_State( p );
+            res->action = p.paction[ 0 ];
+            p.paction.remove( 0 );
+            res->add_next( _make_rec( p, "use_pact" ) );
+            return res;
+        }
+        p.paction.remove( 0 );
+        return _make_rec( p, "rem_pact" );
     }
 
     return 0;
@@ -278,13 +299,31 @@ State *StateMaker::_jmp_cond( Smp &p ) {
 State *StateMaker::_jmp_code( Smp &p ) {
     for( int i = 0; i < p.ok.size(); ++i ) {
         if ( p.ok[ i ]->is_an_action() ) {
+            // particular case: no "data"
+            if ( not p.ok[ i ]->needs_data() ) {
+                // we have to wait to know if the machine will be ok ?
+                if ( p.ok.size() > 1 ) {
+                    p.paction << p.ok[ i ];
+                    p.next( i );
+                    return _make_rec( p, "paction" );
+                }
+                // else, execute it
+                State *res = _new_State( p );
+                res->action = p.ok[ i ];
+                p.next( i );
+
+                res->add_next( _make_rec( p, "imm code" ) );
+                return res;
+
+            }
+
             // add a mark if necessary (-> p.pending)
             if ( p.ok.size() > 1 and not p.pending ) {
-                State *res = _new_State( p );
-                res->set_mark = true;
-                p.pending = res;
-                res->add_next( _make_rec( p, "mk pend" ) );
-                return res;
+                    State *res = _new_State( p );
+                    res->set_mark = true;
+                    p.pending = res;
+                    res->add_next( _make_rec( p, "mk pend" ) );
+                    return res;
             }
 
             // else (or after that), create a state with the instructions

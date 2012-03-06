@@ -18,6 +18,7 @@ public:
     bool surely_leads_to_the_end( int index );
 
     std::set<const Instruction *> visited;
+    Vec<const Instruction *> paction; ///< pending "no data" actions
     Vec<const Instruction *> ok;
     String display_prefix;
     bool display_steps;
