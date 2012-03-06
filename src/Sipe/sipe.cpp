@@ -1,6 +1,9 @@
-// #include "Sipe/Language_C.h"
+#include "Sipe/Language_C.h"
 #include "Sipe/Engine.h"
 #include <string.h>
+#include <stdlib.h>
+#include <sstream>
+#include <fstream>
 
 int usage( const char *prg, const char *msg, int res ) {
     if ( msg )
@@ -11,6 +14,7 @@ int usage( const char *prg, const char *msg, int res ) {
     cerrn << "  -o filename: file name for code output";
     cerrn << "  -l language: output langage (in C, C++, Javascript)";
     cerrn << "  -l machine: oentry point ('main'' by default)";
+    cerrn << "  -e: compile and execute";
     cerrn << "  -dl: to display the lexem graph";
     cerrn << "  -di: to display the instruction graph";
     cerrn << "  -ds: to display the state graph";
@@ -22,9 +26,10 @@ int usage( const char *prg, const char *msg, int res ) {
 int main( int argc, char **argv ) {
     // default values
     Engine e;
+    String output;
     int first_input = 0;
+    bool execute = false;
     const char *source = 0;
-    const char *output = 0;
     const char *machine = 0;
     const char *language = 0;
 
@@ -52,6 +57,8 @@ int main( int argc, char **argv ) {
             e.ds = true;
         } else if ( strcmp( argv[ i ], "-ws" ) == 0 ) {
             e.ws = true;
+        } else if ( strcmp( argv[ i ], "-e" ) == 0 ) {
+            execute = true;
         } else if ( not source ) {
             source = argv[ i ];
         } else if ( not first_input ) {
@@ -66,9 +73,44 @@ int main( int argc, char **argv ) {
     if ( not machine )
         machine = "main";
 
+    if ( not language )
+        language = "cpp";
+
     e.read( source );
     State *state = e.make_state_seq( machine );
-    //    Language_C l( true );
-    //    l.write( std::cout, state );
+
+    //
+    if ( execute and not output.size() ) {
+        output = source;
+        if ( int ind = output.rfind( '/' ) )
+            output = output.substr( 0, ind + 1 ) + '.' + output.substr( ind + 1 ) + ".cpp";
+        else
+            output = '.' + output + ".cpp";
+    }
+
+    std::ostream *out = &std::cout;
+    std::ofstream fout;
+    if ( output.size() ) {
+        fout.open( output.c_str() );
+        if ( not fout ) {
+            cerrn << "Impossible to open '" << output << "'.";
+            return 6;
+        }
+        out = &fout;
+    }
+
+    Language_C l( true );
+    l.write( *out, state, true );
+
+    if ( execute and output.size() ) {
+        fout.close();
+
+        std::ostringstream cmd;
+        cmd << "metil_comp -no-env -O3 " << output;
+        if ( first_input )
+            for( int i = first_input; i < argc; ++i )
+                cmd << " '" << argv[ i ] << "'";
+        return system( cmd.str().c_str() );
+    }
 }
 

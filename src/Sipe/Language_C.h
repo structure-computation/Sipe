@@ -11,7 +11,7 @@ public:
     Language_C( bool cpp );
     virtual ~Language_C();
 
-    virtual void write( std::ostream &os, const State *state );
+    virtual void write( std::ostream &os, const State *state, bool write_main = false );
 
 protected:
     void write_code( std::ostream &os, const State *state );
@@ -22,8 +22,9 @@ protected:
         const State *mark;
         int label;
     };
-
     typedef std::map<const State *,int> MS;
+    String struct_name;
+    bool need_a_mark;
     int nb_labels;
     Vec<Cnt> cnt;
     MS written;

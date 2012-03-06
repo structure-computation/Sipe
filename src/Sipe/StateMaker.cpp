@@ -299,6 +299,17 @@ State *StateMaker::_jmp_cond( Smp &p ) {
 State *StateMaker::_jmp_code( Smp &p ) {
     for( int i = 0; i < p.ok.size(); ++i ) {
         if ( p.ok[ i ]->is_an_action() ) {
+            // particular case: immediate execution (even if other machines are possible)
+            if ( p.ok[ i ]->immediate_execution() ) {
+                State *res = _new_State( p );
+                res->action = p.ok[ i ];
+                p.next( i );
+
+                res->add_next( _make_rec( p, "imm exec" ) );
+                return res;
+
+            }
+
             // particular case: no "data"
             if ( not p.ok[ i ]->needs_data() ) {
                 // we have to wait to know if the machine will be ok ?

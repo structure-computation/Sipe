@@ -75,12 +75,26 @@ bool Instruction::surely_leads_to_the_end( const Cond *cond, int nb_incc_allowed
 }
 
 std::ostream &Instruction::write_label( std::ostream &os ) const {
+    // os << freq << ",";
     if ( cond        ) return os << *cond;
     if ( incc        ) return os << "+" << incc;
     if ( code.size() ) return dot_out( os, code, 10 );
     if ( func        ) return dot_out( os, *func, 10 );
     if ( end         ) return os << ( end == 2 ? "KO" : "OK" );
     return os << ".";
+}
+
+std::ostream &Instruction::write_code( std::ostream &os, Language *l ) const {
+    if ( code.size() )
+        os << "    " << code << "\n";
+    return os;
+}
+
+bool Instruction::immediate_execution() const {
+    if ( not is_an_action() )
+        return false;
+    if ( func and func->name == "_add_attr" ) return true;
+    return false;
 }
 
 bool Instruction::branching_only() const {
@@ -105,6 +119,9 @@ bool Instruction::needs_data() const {
             if ( ( res == 0 or not cntvar( code[ res - 1 ] ) ) and ( res + 4 == code.size() or not cntvar( code[ res + 4 ] ) ) )
                 return true;
     }
+    //    if ( func ) {
+    //        if ( func->name == "_add_attr" ) return false;
+    //    }
     return false;
 }
 

@@ -28,9 +28,11 @@ public:
     bool get_next_conds( Vec<const Instruction *> &conds, int nb_incc_allowed ) const; ///< return true if all the branches have an accessible cond
     int display_dot( const char *f = ".inst.dot", const char *prg = "okular" ) const;
     bool surely_leads_to_the_end( const Cond *cond, int nb_incc_allowed ) const;
+    std::ostream &write_code( std::ostream &os, Language *l ) const; ///<
     std::ostream &write_label( std::ostream &os ) const; ///<
     void get_children( Vec<Instruction *> &vec );
     Instruction &operator<<( Instruction *n ); ///< add to next
+    bool immediate_execution() const;
     bool branching_only() const;
     bool is_an_action() const;
     bool needs_data() const; ///< true if data is needed for the action

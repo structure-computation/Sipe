@@ -1,28 +1,34 @@
 
 get_urls = 
-    ( '/file' { coutn << "requesting /file"; } )
+    ( '/file ' { coutn << "requesting /file"; } )
+
     #| ( { P(*data); } any )*
     # { beg_url = data + 1; } any** ' ' { coutn << "url='" << String( beg_url, data ) << "'"; }
 
 
-content_length = new_line 'Content-Length: ' unsigned_int_reader[ val = 'content_length' ]
+content_length = 'Content-Length: ' uint[ val = 'content_length' ] { std::cout << sipe_data->content_length; }
 
 post_data =
     (
-        content_length |
+        ( nl content_length ) |
         #( new_line new_line @end_post_data ) |
         any
     )**
     #:end_post_data
 
-get  = 'GET ' #{ P( "get" ); } get_urls ' '
-put  = 'PUT ' #{{ P( "put" ); }
-post = 'POST ' #{ P( "post" ); } post_data 
-e400 = { P( "ERROR 400: bad request type" ); }
+get  = 'GET ' { std::cout << "-> get\n"; } # get_urls
+put  = 'PUT ' { std::cout << "-> put\n"; } #{{ P( "put" ); }
+post = 'POST ' { std::cout << "-> post\n"; } post_data
+e400 = { std::cout << "ERROR 400: bad request type\n"; }
 
 
-main = 
+main =
     #_set_strn[ 'Http' ]
-    'GET ' | 'PUT ' | 'POST ' | e400
+    get  [freq=10] |
+    put  [freq= 1] |
+    post [freq= 6] |
+    e400
     #get | post | put | e400
     
+#main = uint[ val="toto" ] { std::cout << sipe_data->toto; }
+

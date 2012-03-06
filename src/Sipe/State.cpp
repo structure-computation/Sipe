@@ -265,6 +265,7 @@ void State::_write_dot_rec( std::ostream &os ) const {
         os << "  node_" << this << " -> node_" << next[ i ].s;
         if ( i and not next[ i ].cond.always_checked() )
             os << " [label=\"" << next[ i ].cond << "\"]";
+        //  << "," << next[ i ].freq
         else if ( next.size() >= 2 )
             os << " [color=\"red\"]";
         os << ";";
