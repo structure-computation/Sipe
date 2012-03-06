@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include "Instruction.h"
+#include <set>
 
 /**
 */
@@ -28,7 +29,7 @@ public:
 
     //
     Vec<const Instruction *> instructions;
-    Vec<const Instruction *> visited;
+    std::set<const Instruction *> visited;
     Vec<State *> prev;
     bool   set_mark;
     State *use_mark;

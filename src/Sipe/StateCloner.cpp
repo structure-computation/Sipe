@@ -7,10 +7,10 @@ State *StateCloner::make( State *src, State *dst ) {
     dst->prev_mark( src );
 
     Scp p( src, dst );
-    return make( p, "orig" );
+    return _make_rec( p, "orig" );
 }
 
-State *StateCloner::new_State( Scp &p ) {
+State *StateCloner::_new_State( Scp &p ) {
     State *res = new State( *p.state );
     res->prev.resize( 0 );
     res->next.resize( 0 );
@@ -20,7 +20,7 @@ State *StateCloner::new_State( Scp &p ) {
     return res;
 }
 
-State *StateCloner::make( Scp &p, const char *msg ) {
+State *StateCloner::_make_rec( Scp &p, const char *msg ) {
     // already created ?
     TC::iterator iter = created.find( p.bid() );
     if ( iter != created.end() ) {
@@ -42,46 +42,48 @@ State *StateCloner::make( Scp &p, const char *msg ) {
     Vec<const Instruction *> vi;
     int an = -1;
     for( int i = 0; i < p.state->instructions.size(); ++i ) {
-        return 0;
-//        if ( p.state->instructions[ i ]->can_lead_to( p.dst->instructions[ 0 ], allowed ) ) {
-//            if ( p.state->action_num == i )
-//                an = vi.size();
-//            vi << p.state->instructions[ i ];
-//        }
+        std::set<const Instruction *> allowed = p.dst->visited;
+        allowed.insert( p.dst->instructions[ 0 ] );
+
+        if ( p.state->instructions[ i ]->can_lead_to( p.dst->instructions[ 0 ], allowed ) ) {
+            if ( p.state->action_num == i )
+                an = vi.size();
+            vi << p.state->instructions[ i ];
+        }
     }
 
     // do we need a set_mark ?
     if ( an >= 0 and vi.size() >= 2 and not p.set_mark ) {
-        State *res = new_State( p );
+        State *res = _new_State( p );
         res->instructions = vi;
         res->set_mark = true;
         res->action_num = -1;
         p.set_mark = res;
-        res->add_next( make( p, "set_mark" ) );
+        res->add_next( _make_rec( p, "set_mark" ) );
         return res;
     }
 
     // do we need a use_mark ?
     if ( p.set_mark and vi.size() == 1 ) {
-        State *res = new_State( p );
+        State *res = _new_State( p );
         res->use_mark = p.set_mark;
         res->action_num = -1;
         res->instructions = vi;
         p.set_mark = 0;
-        res->add_next( make( p, "use_mark" ) );
+        res->add_next( _make_rec( p, "use_mark" ) );
         use_mark_stack << res;
         return res;
     }
 
     // else, make a copy (with a new next and a new prev)
-    State *res = new_State( p );
+    State *res = _new_State( p );
     res->instructions = vi;
     res->action_num = an;
 
     for( int i = 0; i < p.state->next.size(); ++i ) {
         State::Next n = p.state->next[ i ];
         Scp np = p; np.state = n.s;
-        n.s = make( np, "cont" );
+        n.s = _make_rec( np, "cont" );
         if ( n.s )
             res->add_next( n );
     }

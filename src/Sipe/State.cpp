@@ -105,9 +105,10 @@ State *State::simplified() {
     Vec<State *> ends;
     for( int i = 0; i < ch.size(); ++i ) {
         ch[ i ]->op_mp = ch[ i ];
-        if ( ch[ i ]->action_num == 0 and ch[ i ]->instructions[ 0 ]->end )
+        if ( ch[ i ]->end )
             ends << ch[ i ];
     }
+    P( ends.size() );
 
     // for each state, look if it leads to nothing interesting but the end
     for( int i = 0; i < ch.size(); ++i ) {
@@ -124,6 +125,7 @@ State *State::simplified() {
                 }
             }
 
+            P( accessible_ends.size() );
             if ( accessible_ends.size() == 1 )
                 ch[ i ]->op_mp = accessible_ends[ 0 ];
         }

@@ -13,8 +13,8 @@ public:
     State *make( State *src, State *dst );
 
 protected:
-    State *new_State( Scp &p );
-    State *make( Scp &p, const char *msg );
+    State *_new_State( Scp &p );
+    State *_make_rec( Scp &p, const char *msg );
 
     typedef std::map<String,State *> TC;
     Vec<State *> &use_mark_stack;

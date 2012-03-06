@@ -40,7 +40,7 @@ void Smp::remove_branch( int index ) {
 
 void Smp::init( const Instruction *inst ) {
     ok << inst;
-    visited << inst;
+    visited.insert( inst );
 }
 
 bool Smp::surely_leads_to_the_end( int index ) {
@@ -48,7 +48,7 @@ bool Smp::surely_leads_to_the_end( int index ) {
 }
 
 int Smp::next( int index ) {
-    visited << ok[ index ];
+    visited.insert( ok[ index ] );
     int n = ok[ index ]->next.size();
     ok.replace( index, ok[ index ]->next );
     return n;

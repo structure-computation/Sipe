@@ -17,7 +17,7 @@ public:
     void init( const Instruction *inst );
     bool surely_leads_to_the_end( int index );
 
-    Vec<const Instruction *> visited;
+    std::set<const Instruction *> visited;
     Vec<const Instruction *> ok;
     String display_prefix;
     bool display_steps;

@@ -6,6 +6,7 @@
 #include "Func.h"
 #include "Ctr.h"
 #include "Vec.h"
+#include <set>
 
 class Language;
 
@@ -23,6 +24,7 @@ public:
     Instruction( const Lexem *lex, double freq );
     virtual ~Instruction();
 
+    bool can_lead_to( const Instruction *dst, const std::set<const Instruction *> &allowed ) const;
     bool get_next_conds( Vec<const Instruction *> &conds, int nb_incc_allowed ) const; ///< return true if all the branches have an accessible cond
     int display_dot( const char *f = ".inst.dot", const char *prg = "okular" ) const;
     bool surely_leads_to_the_end( const Cond *cond, int nb_incc_allowed ) const;
@@ -50,6 +52,7 @@ public:
 
 
 protected:
+    bool _can_lead_to_rec( const Instruction *dst, const std::set<const Instruction *> &allowed ) const;
     bool _get_next_conds_rec( Vec<const Instruction *> &conds, int nb_incc_allowed ) const;
     bool _surely_leads_to_the_end_rec( const Cond *cond, int nb_incc_allowed ) const;
     void _get_children_rec( Vec<Instruction *> &vec );

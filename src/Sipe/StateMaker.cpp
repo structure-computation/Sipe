@@ -24,29 +24,29 @@ StateMaker::StateMaker( Vec<State *> &to_del ) : to_del( to_del ) {
 
 State *StateMaker::make( const Instruction *inst, bool ws ) {
     Smp p;
+    p.init( inst );
     p.allow_incc = false;
-    p.ok << inst;
     p.display_steps = ws;
     State *res = _make_rec( p, "init" );
 
     // restart state seqs
-//    while ( use_mark_stack.size() ) {
-//        State *dst = use_mark_stack.pop();
-//        State *src = dst->use_mark->next[ 0 ].s; // after the set_mark
+    while ( use_mark_stack.size() ) {
+        State *dst = use_mark_stack.pop();
+        State *src = dst->use_mark->next[ 0 ].s; // after the set_mark
 
-//        StateCloner sc( to_del, use_mark_stack );
-//        State *nst = sc.make( src, dst );
-//        if ( nst->has_something_to_execute( dst->has_something_to_execute( false ) ) ) {
-//            dst->insert_between_this_and_next( nst );
-//        } else {
-//            dst->rem_mark = dst->use_mark;
-//            dst->use_mark = 0;
-//        }
+        StateCloner sc( to_del, use_mark_stack );
+        State *nst = sc.make( src, dst );
+        if ( nst->has_something_to_execute( dst->has_something_to_execute( false ) ) ) {
+            dst->insert_between_this_and_next( nst );
+        } else {
+            dst->rem_mark = dst->use_mark;
+            dst->use_mark = 0;
+        }
 
-//        //        std::ostringstream ss;
-//        //        ss << ".state_" << nst << ".dot";
-//        //        nst->display_dot( ss.str().c_str() );
-//    }
+        //        std::ostringstream ss;
+        //        ss << ".state_" << nst << ".dot";
+        //        nst->display_dot( ss.str().c_str() );
+    }
 
     return res->simplified();
 }
@@ -108,8 +108,8 @@ State *StateMaker::_same_bid( Smp &p ) {
         coutn << p.display_prefix << "found same bid " << p.bid();
 
     if ( iter != created.end() ) {
-        //for( std::set<const Instruction *>::const_iterator v = p.visited.begin(); v != p.visited.end(); ++v )
-        //    iter->second->visited.insert( *v );
+        for( std::set<const Instruction *>::const_iterator v = p.visited.begin(); v != p.visited.end(); ++v )
+            iter->second->visited.insert( *v );
         return iter->second;
     }
 

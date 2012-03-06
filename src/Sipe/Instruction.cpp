@@ -46,6 +46,11 @@ Instruction::~Instruction() {
 }
 
 
+bool Instruction::can_lead_to( const Instruction *dst, const std::set<const Instruction *> &allowed ) const {
+    ++cur_op_id;
+    return _can_lead_to_rec( dst, allowed );
+}
+
 bool Instruction::get_next_conds( Vec<const Instruction *> &conds, int nb_incc_allowed ) const {
     ++cur_op_id;
     _get_next_conds_rec( conds, nb_incc_allowed );
@@ -102,6 +107,24 @@ Instruction &Instruction::operator<<( Instruction *n ) {
         n->prev << this;
     }
     return *this;
+}
+
+
+bool Instruction::_can_lead_to_rec( const Instruction *dst, const std::set<const Instruction *> &allowed ) const {
+    if ( op_id == cur_op_id )
+        return false;
+    op_id = cur_op_id;
+
+    if ( this == dst )
+        return true;
+
+    for( int i = 0; i < next.size(); ++i ) {
+        if ( not allowed.count( next[ i ] ) )
+            continue;
+        if ( next[ i ]->_can_lead_to_rec( dst, allowed ) )
+            return true;
+    }
+    return false;
 }
 
 bool Instruction::can_lead_to_an_incc( const Vec<const Instruction *> &lst ) {
