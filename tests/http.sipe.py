@@ -23,13 +23,14 @@ e400 = { std::cout << "ERROR 400: bad request type\n"; }
 
 p_data =
     (
-        ( 'C' {P("C");} uint[ val = 'content_length' ] {P(sipe_data->content_length);} ) |
+        ( 'C' uint[ val = 'content_length' ] {P(sipe_data->content_length);} ) |
+        # {P("C");}
         #( new_line new_line @end_post_data ) |
         any
     )**
     #:end_post_data
 
-pot = 'P' { std::cout << "-> p\n"; } p_data
+pot = 'P' p_data
 
 main =
     _add_prel[ '#define P(A) std::cout << #A << " -> " << A << std::endl;' ]
