@@ -106,7 +106,7 @@ int main( int argc, char **argv ) {
         fout.close();
 
         std::ostringstream cmd;
-        cmd << "metil_comp -no-env -O3 -DSIPE_MAIN " << output;
+        cmd << "metil_comp -no-env -g3 -O3 -DSIPE_MAIN " << output;
         if ( first_input )
             for( int i = first_input; i < argc; ++i )
                 cmd << " '" << argv[ i ] << "'";

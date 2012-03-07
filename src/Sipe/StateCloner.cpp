@@ -35,7 +35,7 @@ State *StateCloner::_make_rec( Scp &p, const char *msg ) {
 
     // if dst
     if ( p.state == p.dst )
-        return _new_State( p );
+        return new State;
 
 
     // else, get updated instructions

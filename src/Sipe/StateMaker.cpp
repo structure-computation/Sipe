@@ -31,7 +31,6 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
 
     // restart state seqs
     while ( use_mark_stack.size() ) {
-        P(__LINE__);
         State *dst = use_mark_stack.pop();
         State *src = dst->use_mark->next[ 0 ].s; // after the set_mark
 
