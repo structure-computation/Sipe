@@ -21,6 +21,7 @@ protected:
 
     void read_state( const State *state );
 
+    Vec<String> preliminaries;
     Vec<Attr> attributes;
 };
 

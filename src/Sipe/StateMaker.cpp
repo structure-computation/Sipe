@@ -137,6 +137,9 @@ State *StateMaker::_use_pact( Smp &p ) {
         std::set<const Instruction *> allowed = p.visited;
         allowed.insert( p.ok[ 0 ] );
         if ( p.paction[ 0 ]->can_lead_to( p.ok[ 0 ], allowed ) ) {
+            P( *p.paction[ 0 ] );
+            P( *p.ok[ 0 ] );
+
             State *res = _new_State( p );
             res->action = p.paction[ 0 ];
             p.paction.remove( 0 );
@@ -311,22 +314,23 @@ State *StateMaker::_jmp_code( Smp &p ) {
             }
 
             // particular case: no "data"
-            if ( not p.ok[ i ]->needs_data() ) {
-                // we have to wait to know if the machine will be ok ?
-                if ( p.ok.size() > 1 ) {
-                    p.paction << p.ok[ i ];
-                    p.next( i );
-                    return _make_rec( p, "paction" );
-                }
-                // else, execute it
-                State *res = _new_State( p );
-                res->action = p.ok[ i ];
-                p.next( i );
+            //            if ( not p.ok[ i ]->needs_data() ) {
+            //                // we have to wait to know if the machine will be ok ?
+            //                if ( p.ok.size() > 1 ) {
+            //                    if ( not p.paction.contains( p.ok[ i ] ) )
+            //                        p.paction << p.ok[ i ];
+            //                    p.next( i );
+            //                    return _make_rec( p, "paction" );
+            //                }
+            //                // else, execute it
+            //                State *res = _new_State( p );
+            //                res->action = p.ok[ i ];
+            //                p.next( i );
 
-                res->add_next( _make_rec( p, "imm code" ) );
-                return res;
+            //                res->add_next( _make_rec( p, "imm code" ) );
+            //                return res;
 
-            }
+            //            }
 
             // add a mark if necessary (-> p.pending)
             if ( p.ok.size() > 1 and not p.pending ) {

@@ -21,11 +21,17 @@ void Language_C::write( std::ostream &os, const State *state, bool write_main ) 
 
     //
     if ( write_main ) {
+        on << "#ifdef SIPE_MAIN";
         on << "#include <fcntl.h>";
         on << "#include <stdio.h>";
         if ( cpp )
             on << "#include <iostream>";
+        on << "#endif // SIPE_MAIN";
     }
+
+    // preliminaries
+    for( int i = 0; i < preliminaries.size(); ++i )
+        on << preliminaries[ i ];
 
     // declarations
     on << "struct " << struct_name << ";";
@@ -73,6 +79,7 @@ void Language_C::write( std::ostream &os, const State *state, bool write_main ) 
     on << "}";
 
     if ( write_main ) {
+        on << "#ifdef SIPE_MAIN";
         on << "int parse_file( int fd ) {";
         on << "    " << struct_name << " sd;";
         if ( not cpp )
@@ -103,6 +110,7 @@ void Language_C::write( std::ostream &os, const State *state, bool write_main ) 
         on << "            parse_file( fd );";
         on << "    }";
         on << "}";
+        on << "#endif // SIPE_MAIN";
     }
 }
 
@@ -151,6 +159,21 @@ void Language_C::write_code_rec( StreamSepMaker<std::ostream> &os, const State *
     if ( state->end ) {
         os << "    sipe_data->_inp_cont = &&l_" << label << ";";
         os << "    return " << state->end << ";";
+    }
+
+    //
+    if ( state->set_mark ) {
+        need_a_mark = true;
+        os << "    sipe_data->_mark = data;";
+    }
+
+    //
+    if ( state->use_mark ) {
+        os << "    data = sipe_data->_mark;";
+    }
+
+    //
+    if ( state->rem_mark ) {
     }
 
     //

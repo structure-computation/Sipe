@@ -39,6 +39,7 @@ void Smp::join_branches( int j, int i ) {
 }
 
 void Smp::remove_branch( int index ) {
+    visited.erase( ok[ index ] );
     ok.remove( index );
 }
 

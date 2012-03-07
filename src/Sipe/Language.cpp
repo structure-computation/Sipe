@@ -23,6 +23,13 @@ void Language::read_state( const State *state ) {
                         break;
                 }
             }
+            if ( state->action->func->name == "_add_prel" ) {
+                for( int j = 0; j < state->action->func->parm.u_params.size(); ++j ) {
+                    String prel = state->action->func->parm.u_params[ j ];
+                    if ( not preliminaries.contains( prel ) )
+                        preliminaries << prel;
+                }
+            }
         }
     }
 }

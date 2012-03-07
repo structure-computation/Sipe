@@ -78,8 +78,8 @@ std::ostream &Instruction::write_label( std::ostream &os ) const {
     // os << freq << ",";
     if ( cond        ) return os << *cond;
     if ( incc        ) return os << "+" << incc;
-    if ( code.size() ) return dot_out( os, code, 10 );
-    if ( func        ) return dot_out( os, *func, 10 );
+    if ( code.size() ) return dot_out( os, code, 20 );
+    if ( func        ) return dot_out( os, *func, 20 );
     if ( end         ) return os << ( end == 2 ? "KO" : "OK" );
     return os << ".";
 }
@@ -94,6 +94,7 @@ bool Instruction::immediate_execution() const {
     if ( not is_an_action() )
         return false;
     if ( func and func->name == "_add_attr" ) return true;
+    if ( func and func->name == "_add_prel" ) return true;
     return false;
 }
 
