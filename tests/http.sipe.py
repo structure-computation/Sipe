@@ -23,7 +23,7 @@ e400 = { std::cout << "ERROR 400: bad request type\n"; }
 
 p_data =
     (
-        ( 'C' uint[ val = 'content_length' ] {P(sipe_data->content_length);} ) |
+        ( 'Z' uint[ val = 'content_length' ] {P(sipe_data->content_length);} ) |
         # {P("C");}
         #( new_line new_line @end_post_data ) |
         any

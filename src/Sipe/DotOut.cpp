@@ -25,7 +25,7 @@ std::ostream &dot_out( std::ostream &os, const char *beg, const char *end, int l
     return os;
 }
 
-int exec_dot( const char *f, const char *viewer, bool launch_viewer ) {
+int exec_dot( const char *f, const char *viewer, bool launch_viewer, bool par ) {
     // call graphviz
     std::ostringstream ss;
     ss << "dot -Tpdf " << f << " > " << f << ".pdf";
@@ -44,7 +44,9 @@ int exec_dot( const char *f, const char *viewer, bool launch_viewer ) {
         };
         for( int i = not viewer; t[ i ]; ++i ) {
             std::ostringstream ss;
-            ss << t[ i ] << " " << f << ".pdf &";
+            ss << t[ i ] << " " << f << ".pdf";
+            if ( par )
+                ss << " &";
             if ( system( ss.str().c_str() ) == 0 )
                 return 0;
         }
