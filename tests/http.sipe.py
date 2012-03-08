@@ -12,7 +12,7 @@ content_length =
 
 post_data =
     (
-        ( lf content_length ) |
+        ( eol content_length ) |
         #( cr cr @end_post_data ) |
         any
     )**
@@ -28,12 +28,15 @@ e400 = { std::cout << "ERROR 400: bad request type\n"; }
 main =
     _add_prel[ '#define P(A) std::cout << #A << " -> " << A << std::endl;' ]
     _set_strn[ 'Http' ]
-    # p[ pouet]
-    'A'+ 'B' { P( "YOP" ); }
 
-#    get  [freq=10] |
-#    put  [freq= 1] |
-#    post [freq= 6] |
-#    e400
-    
-#main = uint[ val="toto" ] { std::cout << sipe_data->toto; }
+    get  [freq=10] |
+    put  [freq= 1] |
+    post [freq= 6] |
+    e400
+
+p[ _a, _b = "tata" ] = { std::cout << "a=_a, b=_b" << std::endl; }
+#p[ msg = '' ] = { std::cout << "ERROR 400: bad request type" << std::endl; }
+
+main =
+    # 'A'? 'B'
+    p["pouet","1"]

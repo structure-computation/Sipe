@@ -71,9 +71,13 @@ const Lexem *LexemMaker::root() const {
 
 const Lexem *LexemMaker::operator()( const char *beg_name, const char *end_name ) const {
     const Lexem *res = 0;
-    for( const Lexem *item = root(); item ; item = item->next )
-        if ( item->eq( Lexem::OPERATOR, "=" ) and item->children[ 0 ]->eq( beg_name, end_name ) )
-            res = item->next;
+    for( const Lexem *item = root(); item ; item = item->next ) {
+        if ( item->eq( Lexem::OPERATOR, "=" ) ) {
+            const Lexem *c = item->children[ 0 ];
+            if ( c->eq( beg_name, end_name ) or ( c->eq( Lexem::OPERATOR, "[" ) and c->children[ 0 ]->eq( beg_name, end_name ) ) )
+                res = item->next;
+        }
+    }
     return res;
 }
 

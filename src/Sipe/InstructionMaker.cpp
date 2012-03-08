@@ -55,11 +55,50 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, FuncParm
     //
     for( ; lex and not lex->eq( Lexem::OPERATOR, "=" ); lex = lex->next ) {
         if ( lex->type == Lexem::VARIABLE ) {
-            if ( lex->beg[ 0 ] == '_' )
+            if ( lex->beg[ 0 ] == '_' ) {
+                // -> internal function call
                 src = app( src, new Instruction( lex, freq, Func( lex->beg, lex->end, params ) ) );
-            else if ( const Lexem *nex = lexem_maker( lex->beg, lex->end ) )
+            } else if ( const Lexem *nex = lexem_maker( lex->beg, lex->end ) ) {
+                // -> machine call
+                if ( nex->prev and nex->prev->eq( Lexem::OPERATOR, "=" ) and nex->prev->children[ 0 ]->eq( Lexem::OPERATOR, "[" ) ) {
+                    // -> with arguments
+                    int num_parm = 0, nb_with_default_values = 0;
+                    for( const Lexem *c = nex->prev->children[ 0 ]->children[ 1 ]; c; c = c->next ) {
+                        if ( c->eq( Lexem::OPERATOR, "," ) )
+                            continue;
+
+                         // with a default value ?
+                        if ( c->eq( Lexem::OPERATOR, "=" ) and c->next ) {
+                            String key( c->children[ 0 ]->beg, c->children[ 0 ]->end );
+                            ++nb_with_default_values;
+                            c = c->next;
+
+                            if ( not params.has( key ) ) {
+                                if ( num_parm < params.u_params.size() )
+                                    params.set( key, params.u_params[ num_parm ] );
+                                else
+                                    params.set( key, String( c->beg, c->end ) );
+                            }
+                        } else {
+                            String key( c->beg, c->end );
+                            if ( nb_with_default_values ) {
+                                lexem_maker.err( c, "Params without default value cannot exist after params with ones." );
+                            } else if ( num_parm < params.u_params.size() ) {
+                                if ( params.has( key ) )
+                                    lexem_maker.err( lex, "Param is already defined." );
+                                else
+                                    params.set( key, params.u_params[ num_parm ] );
+                            } else if ( not params.has( key ) ) {
+                                lexem_maker.err( lex, "Not enough parameters." );
+                            }
+                        }
+
+                        ++num_parm;
+                    }
+
+                }
                 src = app( src, nex, params, freq );
-            else
+            } else
                 lexem_maker.err( lex, "Machine not found." );
         } else if ( lex->type == Lexem::STRING ) {
             for( const char *s = lex->beg; s != lex->end; ++s ) {
@@ -113,6 +152,9 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, FuncParm
             } else if ( lex->eq( "[" ) ) {
                 FuncParm n_params;
                 for( const Lexem *c = lex->children[ 1 ]; c; c = c->next ) {
+                    if ( c->eq( Lexem::OPERATOR, "," ) )
+                        continue;
+
                     if ( c->eq( Lexem::OPERATOR, "=" ) and c->next ) { // named param ?
                         String name( c->children[ 0 ]->beg, c->children[ 0 ]->end );
                         c = c->next;

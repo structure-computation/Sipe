@@ -10,8 +10,10 @@ class FuncParm {
 public:
     typedef std::pair<String,String> NamedP;
 
+    void set( const String &key, const String &val );
     bool operator==( const FuncParm &fp ) const;
     String operator[]( String key ) const;
+    bool has( String key ) const;
     void remove( String key );
 
     Vec<String> u_params;
