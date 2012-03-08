@@ -84,6 +84,19 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, FuncParm
                 Instruction *comm = app( src, new Instruction( lex, freq ) ); // because we want to loop at he beginning of this (not to the previous instruction)
                 src = app( comm, new Instruction( lex, freq ) ); // first branch -> priority to exit from the loop
                 app( app( comm, lex->children[ 0 ], params, freq ), comm );
+            } else if ( lex->eq( "?" ) ) { // zero or one
+                src = app( src, app( app( src, lex->children[ 0 ], params, freq ), new Instruction( lex, freq ) ) );
+            } else if ( lex->eq( "+" ) ) { // one or more (priority to exit)
+                src = app( src, lex->children[ 0 ], params, freq );
+
+                Instruction *comm = app( src, new Instruction( lex, freq ) ); // because we want to loop at he beginning of this (not to the previous instruction)
+                src = app( comm, new Instruction( lex, freq ) ); // first branch -> priority to exit from the loop
+                app( app( comm, lex->children[ 0 ], params, freq ), comm );
+            } else if ( lex->eq( "++" ) ) { // one or more (with priority to stay inside)
+                src = app( src, lex->children[ 0 ], params, freq );
+
+                src = app( src, new Instruction( lex, freq ) ); // because we want to loop at the beginning of this (not to the previous instruction)
+                app( app( src, lex->children[ 0 ], params, freq ), src );
             } else if ( lex->eq( ".." ) ) {
                 Instruction *t = new Instruction( lex, freq );
                 Instruction *a = app( t, lex->children[ 0 ], params, freq );

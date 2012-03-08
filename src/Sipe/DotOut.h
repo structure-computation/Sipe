@@ -16,6 +16,6 @@ std::ostream &dot_out( std::ostream &os, const T &val, int lim = -1 ) {
 }
 
 
-int exec_dot( const char *filename, const char *viewer = 0, bool launch_viewer = true );
+int exec_dot( const char *filename, const char *viewer = 0, bool launch_viewer = true, bool par = true );
 
 #endif // DOTOUT_H

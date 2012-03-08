@@ -31,7 +31,7 @@ void State::add_next( State *s ) {
     add_next( n );
 }
 
-int State::display_dot( const char *f, const char *prg ) const {
+int State::display_dot( const char *f, const char *prg, bool par ) const {
     std::ofstream os( f );
 
     os << "digraph LexemMaker {\n";
@@ -40,7 +40,7 @@ int State::display_dot( const char *f, const char *prg ) const {
     os << "}\n";
 
     os.close();
-    return exec_dot( f, prg );
+    return exec_dot( f, prg, true, par );
 }
 
 std::ostream &State::write_label( std::ostream &os, int lim ) const {
@@ -162,8 +162,8 @@ void State::insert_between_this_and_next( State *nst ) {
     // P( next.size() );
     //if ( next.size() != 1 )
     //    display_dot();
-
     assert( next.size() == 1 ); //  and next[ 0 ].cond.always_checked()
+
     State *on = next[ 0 ].s;
     on->prev.erase( this );
 
@@ -171,7 +171,9 @@ void State::insert_between_this_and_next( State *nst ) {
     nst->prev << this;
 
     Vec<State *> ep;
-    get_end_points( ep );
+    nst->get_end_points( ep );
+    if( not ep.size() )
+        nst->display_dot( ".tmp", 0, false );
     for( int i = 0; i < ep.size(); ++i )
         ep[ i ]->add_next( on );
 }
