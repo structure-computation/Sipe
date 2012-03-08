@@ -32,23 +32,47 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
     // restart state seqs
     while ( use_mark_stack.size() ) {
         State *dst = use_mark_stack.pop();
-        State *src = dst->use_mark->next[ 0 ].s; // after the set_mark
+        State *smk = dst->use_mark;
+        State *src = smk->next[ 0 ].s; // after the set_mark
 
+        int os_use_mark_stack = use_mark_stack.size();
         StateCloner sc( to_del, use_mark_stack );
         State *nst = sc.make( src, dst );
         if ( nst->has_something_to_execute( dst->has_something_to_execute( false ) ) ) {
+            // if no data dependant actions (due to the instructions or the paths)
+            Vec<const Instruction *> undep;
+            if ( not nst->has_data_dependant_actions( undep ) ) {
+                State *cur = 0, *old = 0;
+                for( int i = 0; i < undep.size(); ++i ) {
+                    cur = new State;
+                    cur->action = undep[ i ];
+                    if ( old )
+                        old->add_next( nst );
+                    else
+                        nst = cur;
+                    old = cur;
+                }
+                use_mark_stack.resize( os_use_mark_stack );
+                dst->rem_mark = dst->use_mark;
+                dst->use_mark = 0;
+            }
+            // nst->display_dot( ".nst", 0, false );
+
             dst->insert_between_this_and_next( nst );
         } else {
+            use_mark_stack.resize( os_use_mark_stack );
             dst->rem_mark = dst->use_mark;
             dst->use_mark = 0;
         }
 
+        smk->used_marks << dst->use_mark;
+        P( smk->used_marks );
         //        std::ostringstream ss;
         //        ss << ".state_" << nst << ".dot";
         //        nst->display_dot( ss.str().c_str() );
     }
 
-    return res->simplified();
+    return res; // ->simplified();
 }
 
 State *StateMaker::_make_rec( Smp &p, const char *step ) {
@@ -137,9 +161,6 @@ State *StateMaker::_use_pact( Smp &p ) {
         std::set<const Instruction *> allowed = p.visited;
         allowed.insert( p.ok[ 0 ] );
         if ( p.paction[ 0 ]->can_lead_to( p.ok[ 0 ], allowed ) ) {
-            P( *p.paction[ 0 ] );
-            P( *p.ok[ 0 ] );
-
             State *res = _new_State( p );
             res->action = p.paction[ 0 ];
             p.paction.remove( 0 );
@@ -193,12 +214,6 @@ State *StateMaker::_prior_br( Smp &p ) {
 
 State *StateMaker::_has_cond( Smp &p ) {
     if ( not p.cond ) {
-        // if only one branch -> we know that p will be ok
-        if ( p.ok.size() == 1 and p.ok[ 0 ]->cond ) {
-            p.next( 0 );
-            return _make_rec( p, "aut_cond" );
-        }
-
         // get all the coming conditions
         Vec<const Instruction *> nc;
         for( int i = 0; i < p.ok.size(); ++i )
@@ -310,7 +325,6 @@ State *StateMaker::_jmp_code( Smp &p ) {
 
                 res->add_next( _make_rec( p, "imm exec" ) );
                 return res;
-
             }
 
             // particular case: no "data"

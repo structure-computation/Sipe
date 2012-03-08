@@ -73,7 +73,7 @@ bool Lexem::eq( Type _type, const char *str ) const {
 }
 
 bool Lexem::eq( const char *str ) const {
-    return strlen( str ) == end - beg and strncmp( beg, str, end - beg ) == 0;
+    return strlen( str ) == size_t( end - beg ) and strncmp( beg, str, end - beg ) == 0;
 }
 
 int Lexem::to_int() const {
@@ -85,5 +85,6 @@ int Lexem::to_int() const {
 
 std::ostream &operator<<( std::ostream &os, const Lexem &l ) {
     os.write( l.beg, l.end - l.beg );
+    return os;
 }
 

@@ -5,6 +5,10 @@
 #include <iostream>
 #include <string>
 
+#ifdef METIL_COMP_DIRECTIVE
+#pragma cpp_flag -Wreorder
+#endif // METIL_COMP_DIRECTIVE
+
 extern StreamSepMaker<std::ostream> coutn;
 extern StreamSepMaker<std::ostream> cerrn;
 

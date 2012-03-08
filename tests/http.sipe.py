@@ -1,4 +1,16 @@
-get_urls = 
+p[ msg ] =
+    _add_prel[ '#include <iostream>' ]
+    { std::cout << "msg" << std::endl; }
+
+i[ val ] =
+    _add_prel[ '#include <iostream>' ]
+    { std::cout << "val -> " << val << std::endl; }
+
+d[ val = "*data" ] =
+    _add_prel[ '#include <iostream>' ]
+    { std::cout << val << std::endl; }
+
+get_urls =
     ( '/file ' { coutn << "requesting /file"; } )
 
     #| ( { P(*data); } any )*
@@ -6,37 +18,37 @@ get_urls =
 
 
 content_length =
-    'Content-Length: '
+    eol  'Content-Length: '
     uint[ val = 'content_length' ]
-    { std::cout << sipe_data->content_length << std::endl; }
+    d[ 'sipe_data->content_length' ]
 
 post_data =
     (
-        ( eol content_length ) |
-        #( cr cr @end_post_data ) |
+        content_length |
+        #( lf lf @end_post_data ) |
         any
     )**
     #:end_post_data
 
-get  = 'GET ' { std::cout << "-> get\n"; } # get_urls
-put  = 'PUT ' { std::cout << "-> put\n"; }
-post = 'POST ' { std::cout << "-> post\n"; } post_data
-e400 = { std::cout << "ERROR 400: bad request type\n"; }
-
-#p[ msg ] = { std::cout << "msg" << std::endl; }
+get  = 'GET '  p[ get ] # get_urls
+put  = 'PUT '  p[ put ]
+post = 'POST ' p[ post ] post_data
+e400 = p['ERROR 400: bad request type']
 
 main =
     _add_prel[ '#define P(A) std::cout << #A << " -> " << A << std::endl;' ]
     _set_strn[ 'Http' ]
 
-    get  [freq=10] |
-    put  [freq= 1] |
-    post [freq= 6] |
-    e400
+    (
+      ( 'A' d ) |
+      any
+    )**
 
-p[ _a, _b = "tata" ] = { std::cout << "a=_a, b=_b" << std::endl; }
-#p[ msg = '' ] = { std::cout << "ERROR 400: bad request type" << std::endl; }
+    #get  [freq=10] |
+    #put  [freq= 1] |
+    #post [freq= 6] #|
+    #e400
 
-main =
-    # 'A'? 'B'
-    p["pouet","1"]
+#main =
+#    'A'? 'B' p[ c ]
+# eol 'A' p[content_length]

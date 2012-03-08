@@ -20,7 +20,7 @@ public:
 
     int size() const { return data.size(); }
 
-    const T &operator[]( int i ) const { return data[ i ]; }
+    T operator[]( int i ) const { return data[ i ]; }
     T &operator[]( int i ) { return data[ i ]; }
 
     const T &back() const { return data[ size() - 1 ]; }
@@ -59,6 +59,13 @@ public:
     bool contains( const T &val ) const {
         for( int i = 0; i < size(); ++i )
             if ( data[ i ] == val )
+                return true;
+        return false;
+    }
+
+    bool any() const {
+        for( int i = 0; i < size(); ++i )
+            if ( data[ i ] )
                 return true;
         return false;
     }

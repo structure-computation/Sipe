@@ -14,21 +14,22 @@ public:
     virtual void write( std::ostream &os, const State *state, bool write_main = false );
 
 protected:
-    void write_code( std::ostream &os, const State *state );
-    void write_code_rec( StreamSepMaker<std::ostream> &os, const State *state, const State *mark );
-    void make_labels_rec( const State *state, bool will_need_a_label );
+    void _write_parse_file_func( std::ostream &os );
+    void _write_preliminaries( std::ostream &os );
+    void _write_declarations( std::ostream &os );
+    void _write_parse_func( std::ostream &os );
+    void _write_init_func( std::ostream &os );
+    void _write_dest_func( std::ostream &os );
+    void _write_main_func( std::ostream &os );
+    void _write_code( std::ostream &os, const State *mark );
 
     struct Cnt {
         const State *mark;
         int label;
     };
-    typedef std::map<const State *,int> MS;
-    String struct_name;
-    bool need_a_mark;
-    int nb_labels;
+
     Vec<Cnt> cnt;
-    MS written;
-    MS labels;
+    String f_suf;
     bool cpp;
 };
 

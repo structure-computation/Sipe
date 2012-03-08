@@ -19,18 +19,21 @@ public:
     bool eq_op_id() const;
     void add_next( State *s );
     void add_next( const Next &n );
+    bool will_write_something() const;
     void prev_mark( State *stop_at ) const;
     void get_children( Vec<State *> &res );
     void get_end_points( Vec<State *> &res );
     void insert_between_this_and_next( State *nst );
     std::ostream &write_label( std::ostream &os, int lim = -1 ) const;
     bool has_something_to_execute( bool take_incc_into_account ) const;
+    bool has_data_dependant_actions( Vec<const Instruction *> &undep ) const;
     int  display_dot( const char *f = ".state.dot", const char *prg = 0, bool par = true ) const;
 
     //
     Vec<const Instruction *> instructions;
     std::set<const Instruction *> visited;
     const Instruction *action; ///<
+    Vec<bool> used_marks; ///< if set_mark
     Vec<State *> prev;
     bool   set_mark;
     State *use_mark;
@@ -57,6 +60,7 @@ protected:
     bool _has_something_to_execute_rec( bool take_incc_into_account ) const;
     bool _is_interesting( bool take_incc_into_account, bool take_nb_next_into_account ) const;
     bool _is_interesting_rec( bool take_incc_into_account, bool take_nb_next_into_account ) const;
+    bool _has_data_dependant_actions_rec( Vec<const Instruction *> &undep, bool allow_undep_actions ) const;
 };
 
 std::ostream &operator<<( std::ostream &os, const State &state );

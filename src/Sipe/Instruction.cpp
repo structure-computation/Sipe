@@ -53,7 +53,7 @@ bool Instruction::can_lead_to( const Instruction *dst, const std::set<const Inst
 
 bool Instruction::get_next_conds( Vec<const Instruction *> &conds, int nb_incc_allowed ) const {
     ++cur_op_id;
-    _get_next_conds_rec( conds, nb_incc_allowed );
+    return _get_next_conds_rec( conds, nb_incc_allowed );
 }
 
 int Instruction::display_dot( const char *f, const char *prg ) const {
@@ -95,6 +95,7 @@ bool Instruction::immediate_execution() const {
         return false;
     if ( func and func->name == "_add_attr" ) return true;
     if ( func and func->name == "_add_prel" ) return true;
+    if ( func and func->name == "_set_strn" ) return true;
     return false;
 }
 
@@ -208,25 +209,31 @@ bool Instruction::_get_next_conds_rec( Vec<const Instruction *> &conds, int nb_i
     op_id = cur_op_id;
 
     if ( incc and nb_incc_allowed-- == 0 )
-        return tmp = false;
+        return ( tmp = false );
 
     if ( cond ) {
         conds << this;
-        return tmp = true;
+        return ( tmp = true );
     } else if ( next.size() ) {
         bool ok = true;
         for( int i = 0; i < next.size(); ++i )
             ok &= next[ i ]->_get_next_conds_rec( conds, nb_incc_allowed );
-        return tmp = ok;
+        return ( tmp = ok );
     }
 
-    return tmp = false;
+    return ( tmp = false );
 }
 
 bool Instruction::_surely_leads_to_the_end_rec( const Cond *_cond, int nb_incc_allowed ) const {
     if ( op_id == cur_op_id )
         return false;
     op_id = cur_op_id;
+
+    if ( incc ) {
+         if ( nb_incc_allowed )
+             return next[ 0 ]->_surely_leads_to_the_end_rec( _cond, nb_incc_allowed - 1 );
+         return next[ 0 ]->_surely_leads_to_the_end_rec( 0, nb_incc_allowed );
+    }
 
     if ( cond and ( not _cond or not _cond->included_in( *cond ) ) )
         return false;
