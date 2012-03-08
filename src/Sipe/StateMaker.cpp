@@ -72,7 +72,7 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
         //        nst->display_dot( ss.str().c_str() );
     }
 
-    return res; // ->simplified();
+    return res->simplified();
 }
 
 State *StateMaker::_make_rec( Smp &p, const char *step ) {
