@@ -91,7 +91,12 @@ Language::Block *Language::_unfold( const State *state, const State *mark, int n
 
 String Language::_bid( const State *state, int num_next, const Cond &not_in ) const {
     std::ostringstream ss;
-    ss << state << " " << num_next << " " << not_in;
+    if ( num_next >= 0 ) {
+        for( int i = num_next; i < state->next.size(); ++i )
+            ss << " " << state->next[ i ].s << " " << state->next[ i ].cond;
+        ss << " " << not_in;
+    } else
+        ss << state << " " << num_next << " " << not_in;
     return ss.str();
 }
 
