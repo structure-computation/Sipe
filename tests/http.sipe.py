@@ -40,7 +40,8 @@ main =
     _set_strn[ 'Http' ]
 
     (
-      ( 'A' d ) |
+      ( 'AB' uint[ val = 'content_length' ]
+      d[ 'sipe_data->content_length' ] ) |
       any
     )**
 
