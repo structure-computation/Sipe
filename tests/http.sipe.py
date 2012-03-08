@@ -18,17 +18,17 @@ get_urls =
 
 
 content_length =
-    eol  'Content-Length: '
+    eol 'Content-Length: '
     uint[ val = 'content_length' ]
     d[ 'sipe_data->content_length' ]
 
 post_data =
     (
         content_length |
-        #( lf lf @end_post_data ) |
+        #( eol eol @end_post_data ) |
         any
     )**
-    #:end_post_data
+    # end_post_data:
 
 get  = 'GET '  p[ get ] # get_urls
 put  = 'PUT '  p[ put ]
