@@ -39,32 +39,13 @@ pc = { putchar(*data); putchar('\n'); }
 pd = { putchar('+'); putchar('\n'); }
 
 
-
-co =
-    10 # 'C'
-    '1'++
-    #uint[ val = 'content_length' ]
-    #d[ 'sipe_data->content_length' ]
-    pd
-
-po_data =
-    (
-        co |
-        #( eol eol @end_post_data ) |
-        any
-    )**
-    # end_post_data:
-
-po = 'P' p[ post ] po_data
-
-
 main =
     get  [freq=10] |
     put  [freq= 1] |
     post [freq= 6] |
     e400
 
-main =
+amain =
     ( 'A' |
       ( 'B' -> pouet )  |
       'C'

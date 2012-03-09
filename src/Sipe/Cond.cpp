@@ -204,7 +204,7 @@ String Cond::_cpp( String var, bool w, const Cond *not_in = 0 ) const {
 
 static int cost_disp_range( const Vec<int> &r ) {
     int res = 0;
-    for( int i = 0; i < r.size(); i += 1 )
+    for( int i = 0; i < r.size(); i += 2 )
         res += 1 + ( r[ i + 0 ] != r[ i + 1 ] ) * 3;
     return res;
 }

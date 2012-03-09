@@ -1,0 +1,32 @@
+# char sets
+any       = 0 .. 256 # Any character in the alphabet.
+ascii     = 0 .. 127 # Ascii characters. 0..127
+extend    = 0 .. 256 # Ascii extended characters. This is the range -128..127 for signed alphabets and the range 0..255 for unsigned alphabets.
+lower     = 'a' .. 'z' # Lowercase characters. [a-z]
+upper     = 'A' .. 'Z' # Uppercase characters. [A-Z]
+digit     = '0' .. '9' # Digits. [0-9]
+alpha     = upper | lower # Alphabetic characters. [A-Za-z]
+alnum     = digit | alpha # Alpha numerics. [0-9A-Za-z]
+xdigit    = digit | 'A' .. 'F' | 'a' .. 'f' # Hexadecimal digits. [0-9A-Fa-f]
+cntrl     = 0 .. 31 # Control characters. 0..31
+graph     = '!' .. '~' # Graphical characters. [!-~]
+print     = ' ' .. '~' # Printable characters. [ -~]
+punct     = '!' .. '/' | ':' .. '@' | ']' .. '`' | '{' .. '~' # Punctuation. Graphical characters that are not alphanumerics.
+null      = 0
+tab       = 9  # tabulation
+lf        = 10 # line feed
+ff        = 12 # form feed
+cr        = 13 # carriage return
+eol       = cr? lf # unix or window$ end line
+vert_tab  = 11 # vertical tab
+space     = tab | vert_tab | ff | lf | cr # Whitespace. [\\t\\v\\f\\n\\r ]
+zlen      = '' # Zero length string
+end       = { end: inp_cont = &&end; return false; } any** #
+
+# mandatory arg: val (e.g. unsigned_int_reader[ val = 'content_length' ])
+uint[ val ] =
+    _add_attr[ 'unsigned val;' 'sipe_data->val = 0;' ]
+    digit { sipe_data->val = *data - '0'; }
+    ( digit { sipe_data->val = 10 * sipe_data->val + ( *data - '0' ); } )**
+
+

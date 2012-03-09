@@ -9,7 +9,7 @@ Engine::Engine() : instruction_maker( lexem_maker ), state_maker( to_del ), lexe
     dl = false;
     ws = false;
 
-    read( "predef", predef, false );
+    read( "predef", predef, false, false );
 }
 
 Engine::~Engine() {
@@ -18,8 +18,8 @@ Engine::~Engine() {
     delete sources;
 }
 
-void Engine::read( const char *provenance, bool dl_allowed ) {
-    sources = new Source( provenance, sources );
+void Engine::read( const char *provenance, const char *data, bool dl_allowed, bool need_cp ) {
+    sources = new Source( provenance, data, sources, need_cp );
     if ( sources->data ) {
         Lexem *res = lexem_maker.read( sources );
         if ( dl_allowed and dl and res )
@@ -27,8 +27,8 @@ void Engine::read( const char *provenance, bool dl_allowed ) {
     }
 }
 
-void Engine::read( const char *provenance, const char *data, bool dl_allowed ) {
-    sources = new Source( provenance, data, sources );
+void Engine::read( const char *provenance, bool dl_allowed ) {
+    sources = new Source( provenance, sources );
     if ( sources->data ) {
         Lexem *res = lexem_maker.read( sources );
         if ( dl_allowed and dl and res )

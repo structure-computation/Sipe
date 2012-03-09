@@ -48,3 +48,5 @@ src/Sipe/Scp.h
 src/Sipe/Scp.cpp
 src/Sipe/Ltate.h
 src/Sipe/Ltate.cpp
+src/txt_to_cpp.cpp
+src/Sipe/predef.sipe

@@ -1,13 +1,14 @@
 MC = metil_comp -Wall -Isrc -g3 src/Sipe/sipe.cpp 
 
-all:
-	${MC} -di -ws -e tests/http.sipe.py
+all: src/Sipe/Predef.cpp
+	${MC} tests/http.sipe.py
 
-exe:
+exe: src/Sipe/Predef.cpp
 	${MC} -e tests/http.sipe.py
 
 #  -di -ds -ws
 val:
 	${MC} --valgrind -ws tests/http.sipe.py
-#  --exec-using "valgrind --leak-check=full"
-# metil_comp --exec-using "valgrind --leak-check=full" -Isrc -g3 src/Sipe/sipe.cpp tests/http.sipe
+
+src/Sipe/Predef.cpp: src/Sipe/Predef.sipe src/txt_to_cpp.cpp
+	metil_comp -Isrc src/txt_to_cpp.cpp src/Sipe/Predef.cpp src/Sipe/Predef.sipe predef

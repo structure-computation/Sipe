@@ -14,8 +14,8 @@ public:
     Engine();
     ~Engine();
 
+    void read( const char *provenance, const char *data, bool dl_allowed = true, bool need_cp = true );
     void read( const char *provenance, bool dl_allowed = true );
-    void read( const char *provenance, const char *data, bool dl_allowed = true );
     Instruction *make_instruction_seq( const char *machine );
     State *make_state_seq( const Instruction *inst );
     State *make_state_seq( const char *machine );
