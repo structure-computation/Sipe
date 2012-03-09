@@ -31,12 +31,15 @@ public:
 template<class TS>
 class StreamSepMaker {
 public:
-    StreamSepMaker( TS &stream, const char *sep = 0, const char *end = "\n" ) : stream( &stream ), sep( sep ), end( end ), beg( 0 ) {}
+    StreamSepMaker( TS &stream, const char *sep = 0, const char *end = "\n" ) : stream( &stream ), sep( sep ), end( end ), beg( 0 ), first_beg( 0 ) {}
 
     ///
     template<class T>
     StreamSep<TS> operator<<( const T &val ) {
-        if ( beg )
+        if( first_beg ) {
+            *stream << first_beg;
+            first_beg = 0;
+        } else if ( beg )
             *stream << beg;
         *stream << val;
         return StreamSep<TS>( stream, sep, end );
@@ -46,6 +49,7 @@ public:
     const char *sep;
     const char *end;
     const char *beg;
+    const char *first_beg;
 };
 
 #endif // STREAMSEP_H

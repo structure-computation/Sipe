@@ -14,9 +14,9 @@ static std::ostream &cc( std::ostream &os, int r ) {
 }
 
 // display of a char
-static std::ostream &cc( std::ostream &os, char r ) {
-    return cc( os, UC( r ) );
-}
+//static std::ostream &cc( std::ostream &os, char r ) {
+//    return cc( os, UC( r ) );
+//}
 
 Cond::Cond() {
     for( int i = 0; i < p_size; ++i )
@@ -202,16 +202,40 @@ String Cond::_cpp( String var, bool w, const Cond *not_in = 0 ) const {
     return res.str();
 }
 
+static int cost_disp_range( const Vec<int> &r ) {
+    int res = 0;
+    for( int i = 0; i < r.size(); i += 1 )
+        res += 1 + ( r[ i + 0 ] != r[ i + 1 ] ) * 3;
+    return res;
+}
+
 std::ostream &operator<<( std::ostream &os, const Cond &cond ) {
     Vec<int> r = cond.ok_ranges();
+
+    bool inv = false;
+    if ( r.size() > 2 ) {
+        Vec<int> a = cond.ko_ranges();
+        if ( cost_disp_range( a ) + 3 < cost_disp_range( r ) ) {
+            inv = a.size() == 2 and a[ 0 ] == a[ 1 ] ? false : true;
+            os << '^';
+            if ( inv )
+                os << '(';
+            r = a;
+        }
+    }
+
     if ( r.size() == 2 and r[ 0 ] == r[ 1 ] )
-        return cc( os, r[ 0 ] );
+        return cc( os, r[ 0 ] ) << ( inv ? ")" : "" );
     for( int i = 0; i < r.size(); i += 2 ) {
         if ( r[ i + 0 ] == r[ i + 1 ] )
             cc( os << ( i ? "|" : "" ), r[ i + 0 ] );
+        else if ( r[ i + 0 ] + 1 == r[ i + 1 ] )
+            cc( cc( os << ( i ? "|" : "" ), r[ i + 0 ] ) << "|",  r[ i + 1 ] );
         else
             cc( cc( os << ( i ? "|" : "" ), r[ i + 0 ] ) << "..",  r[ i + 1 ] );
     }
+    if ( inv )
+        os << ')';
     return os;
 }
 

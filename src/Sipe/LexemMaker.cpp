@@ -17,7 +17,7 @@ static const char *starts_with( const char *beg, const char *str ) {
     }
 }
 
-LexemMaker::LexemMaker( ErrorList &error_list ) : error_list( error_list ), first_item( Lexem::NONE, 0, 0, 0 ) {
+LexemMaker::LexemMaker( ErrorList &error_list ) : first_item( Lexem::NONE, 0, 0, 0 ), error_list( error_list ) {
     // static information on operators
     num_grp_bracket = -1;
     #define OPERATOR( S, N, G ) if ( strcmp( S, "[" ) == 0 ) num_grp_bracket = G;

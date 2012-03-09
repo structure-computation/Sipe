@@ -24,6 +24,10 @@ int usage( const char *prg, const char *msg, int res ) {
 }
 
 int main( int argc, char **argv ) {
+    const char *toto = "\n";
+    P( *toto == 10 );
+    P( *toto == '\n' );
+
     // default values
     Engine e;
     String output;

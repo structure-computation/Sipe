@@ -19,7 +19,7 @@ get_urls =
 
 content_length =
     eol 'Content-Length: '
-    uint[ val = 'content_length' ]
+    uint[ content_length ]
     d[ 'sipe_data->content_length' ]
 
 post_data =
@@ -35,19 +35,43 @@ put  = 'PUT '  p[ put ]
 post = 'POST ' p[ post ] post_data
 e400 = p['ERROR 400: bad request type']
 
-main =
-    _add_prel[ '#define P(A) std::cout << #A << " -> " << A << std::endl;' ]
-    _set_strn[ 'Http' ]
+pc = { putchar(*data); putchar('\n'); }
+pd = { putchar('+'); putchar('\n'); }
 
+
+
+co =
+    10 # 'C'
+    '1'++
+    #uint[ val = 'content_length' ]
+    #d[ 'sipe_data->content_length' ]
+    pd
+
+po_data =
     (
-      ( 'ABCDEFGH' uint[ val = 'content_length' ]
-      d[ 'sipe_data->content_length' ] ) |
-      any
+        co |
+        #( eol eol @end_post_data ) |
+        any
     )**
+    # end_post_data:
 
+po = 'P' p[ post ] po_data
+
+
+main =
+    #_add_prel[ '#define P(A) std::cout << #A << " -> " << A << std::endl;' ]
+    #_set_strn[ 'Http' ]
+    #'Z'
+
+    # ( '1' pc ( '1' pc )** pd # p["pouet"]
+
+    #(
+    #   ( 'AB' uint[content_length] d[ 'sipe_data->content_length' ] # '1' pc ( digit pc )** pd # p["pouet"]
+    #   ) | any
+    #)**
     #get  [freq=10] |
     #put  [freq= 1] |
-    #post [freq= 6] #|
+    post #|
     #e400
 
 #main =

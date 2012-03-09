@@ -27,7 +27,7 @@ const char *predef =
   "end       = { end: inp_cont = &&end; return false; } any** # \n"
 
   "# mandatory arg: val (e.g. unsigned_int_reader[ val = 'content_length' ])\n"
-  "uint =\n"
+  "uint[ val ] =\n"
   "    _add_attr[ 'unsigned val;' 'sipe_data->val = 0;' ] \n"
   "    digit { sipe_data->val = *data - '0'; }\n"
   "    ( digit { sipe_data->val = 10 * sipe_data->val + ( *data - '0' ); } )**\n"

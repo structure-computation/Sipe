@@ -18,6 +18,14 @@ void Language_C::write( std::ostream &os, const State *state, bool write_main ) 
     // _display_dot( block );
     _make_labels( block );
 
+    // hum...
+    if ( write_main ) {
+        StreamSepMaker<std::ostream> on( os );
+        on << "#ifdef SIPE_MAIN";
+        on << "#include <stdio.h>";
+        on << "#endif // SIPE_MAIN";
+    }
+
     //
     _write_preliminaries( os );
     _write_declarations( os );
@@ -29,8 +37,9 @@ void Language_C::write( std::ostream &os, const State *state, bool write_main ) 
     if ( write_main ) {
         StreamSepMaker<std::ostream> on( os );
         on << "#ifdef SIPE_MAIN";
+        on << "#include <unistd.h>";
         on << "#include <fcntl.h>";
-        on << "#include <stdio.h>";
+        // on << "#include <stdio.h>";
         _write_parse_file_func( os );
         _write_main_func( os );
         on << "#endif // SIPE_MAIN";
@@ -74,6 +83,7 @@ void Language_C::_write_init_func( std::ostream &os ) {
     on << "    sipe_data->_inp_cont = 0;";
     if ( need_a_mark )
         on << "    sipe_data->_mark = 0;";
+
     for( int i = 0; i < attributes.size(); ++i )
         if ( attributes[ i ].init.size() )
             os << "    " << attributes[ i ].init << ";";
@@ -91,13 +101,24 @@ void Language_C::_write_dest_func( std::ostream &os ) {
     on << "}";
 }
 
+static int nb_digits( int val ) {
+    if ( val < 0 ) return 1 + nb_digits( -val );
+    if ( val < 10 ) return 1;
+    return 1 + nb_digits( val / 10 );
+}
+
 void Language_C::_write_parse_func( std::ostream &os ) {
     StreamSepMaker<std::ostream> on( os );
+    int nb_spaces = 5;
+    String sp( nb_spaces, ' ' );
+    on.beg = sp.c_str();
 
     // parse
-    on << "int parse" << f_suf << "( " << struct_name << " *sipe_data, const char *data, const char *end ) {";
-    on << "    if ( sipe_data->_inp_cont )";
-    on << "        goto *sipe_data->_inp_cont;";
+    os << "int parse" << f_suf << "( " << struct_name << " *sipe_data, const char *data, const char *end ) {\n";
+    on << "#define INCR( N ) if ( ++data >= end ) goto p_##N; c_##N:";
+    on << "if ( sipe_data->_inp_cont )";
+    on << "    goto *sipe_data->_inp_cont;";
+    on << "";
 
     // blocks
     for( int i = 0; i < block_seq.size(); ++i ) {
@@ -106,46 +127,47 @@ void Language_C::_write_parse_func( std::ostream &os ) {
             continue;
 
         //
-        if ( b->label >= 0 )
-            on << "l_" << b->label << ":";
+        if ( b->label >= 0 ) {
+            os << "l_" << b->label << ":";
+            on.first_beg = on.beg + std::min( nb_spaces, 3 + nb_digits( b->label ) );
+        }
 
         //
         if ( b->state ) {
             // action with data ?
             if ( b->state->action_num >= 0 )
-                b->state->instructions[ b->state->action_num ]->write_code( os, this );
+                b->state->instructions[ b->state->action_num ]->write_code( on, this );
 
             // action without data
             if ( b->state->action )
-                b->state->action->write_code( os, this );
+                b->state->action->write_code( on, this );
 
             // end ?
             if ( b->state->end ) {
-                on << "    sipe_data->_inp_cont = &&l_" << b->label << ";";
-                on << "    return " << b->state->end << ";";
+                on << "sipe_data->_inp_cont = &&l_" << b->label << ";";
+                on << "return " << b->state->end << ";";
             }
 
             //
             if ( b->state->set_mark ) {
-                on << "    sipe_data->_mark = data;";
-                on << "    std::cout << \"set mark\" << std::endl;";
+                on << "sipe_data->_mark = data;";
+                //on << "    std::cout << \"set mark\" << std::endl;";
             }
 
             //
             if ( b->state->use_mark ) {
-                on << "    data = sipe_data->_mark;";
-                on << "    std::cout << \"use mark\" << std::endl;";
+                on << "data = sipe_data->_mark;";
+                //on << "    std::cout << \"use mark\" << std::endl;";
             }
 
             //
             if ( b->state->rem_mark ) {
-                on << "    std::cout << \"rem mark\" << std::endl;";
+                //on << "    std::cout << \"rem mark\" << std::endl;";
             }
 
             //
             if ( b->state->incc ) {
-                on << "    if ( ++data >= end ) goto p_" << cnt.size() << ";";
-                on << "c_" << cnt.size() << ":";
+                on << "INCR( " << cnt.size() << " )";
 
                 Cnt c;
                 c.mark = b->mark;
@@ -158,30 +180,31 @@ void Language_C::_write_parse_func( std::ostream &os ) {
         if ( b->ko ) {
             if ( b->t_ok ) { // if ( cond ) goto ok;
                 String cond = b->cond.ok_cpp( "*data", &b->not_in );
-                on << "    if ( " << cond << " ) goto l_" << b->ok->label << ";";
+                on << "if ( " << cond << " ) goto l_" << b->ok->label << ";";
             } else { // if ( not cond ) goto ko;
                 String cond = b->cond.ko_cpp( "*data", &b->not_in );
-                on << "    if ( " << cond << " ) goto l_" << b->ko->label << ";";
+                on << "if ( " << cond << " ) goto l_" << b->ko->label << ";";
             }
         }
 
         //
         if ( b->write_goto )
-            on << "    goto l_" << b->write_goto->label << ";";
+            on << "goto l_" << b->write_goto->label << ";";
     }
 
     // cnt
     for( int i = 0; i < cnt.size(); ++i ) {
-        on << "p_" << i << ": sipe_data->_inp_cont = &&c_" << i << "; return 0;";
+        os << "p_" << i << ":";
+        on.first_beg = on.beg + std::min( nb_spaces, 3 + nb_digits( i ) );
+        on << "sipe_data->_inp_cont = &&c_" << i << "; return 0;";
     }
-    on << "}";
+    os << "}\n";
 }
 
 void Language_C::_write_parse_file_func( std::ostream &os ) {
     StreamSepMaker<std::ostream> on( os );
 
     // function for execution
-    on << "#ifdef SIPE_MAIN";
     on << "int parse_file( int fd ) {";
     on << "    " << struct_name << " sd;";
     if ( not cpp )
@@ -190,22 +213,21 @@ void Language_C::_write_parse_file_func( std::ostream &os ) {
     on << "    char buffer[ 2048 ];";
     on << "    while ( true ) {";
     on << "        int r = read( fd, buffer, 2048 );";
+    on << "        printf( \"r=%i\\n\", r );";
     on << "        if ( r == 0 )";
-    on << "            break;";
-    on << "        if ( parse" << f_suf << "( &sd, buffer, buffer + r ) == 0 )";
-    on << "            break;";
+    on << "            return 0;";
+    on << "        if ( int res = parse" << f_suf << "( &sd, buffer, buffer + r ) )";
+    on << "            return res;";
     on << "    }";
 
     if ( not cpp )
         on << "    dest( &sd );";
     on << "    return 0;";
     on << "}";
-    on << "#endif // SIPE_MAIN";
 }
 
 void Language_C::_write_main_func( std::ostream &os ) {
     StreamSepMaker<std::ostream> on( os );
-    on << "#ifdef SIPE_MAIN";
     on << "int main( int argc, char **argv ) {";
     on << "    if ( argc == 1 )";
     on << "        return parse_file( 0 );";
@@ -217,5 +239,4 @@ void Language_C::_write_main_func( std::ostream &os ) {
     on << "            parse_file( fd );";
     on << "    }";
     on << "}";
-    on << "#endif // SIPE_MAIN";
 }

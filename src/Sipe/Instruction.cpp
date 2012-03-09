@@ -84,10 +84,9 @@ std::ostream &Instruction::write_label( std::ostream &os ) const {
     return os << ".";
 }
 
-std::ostream &Instruction::write_code( std::ostream &os, Language *l ) const {
+void Instruction::write_code( StreamSepMaker<std::ostream> &os, Language *l ) const {
     if ( code.size() )
-        os << "    " << code << "\n";
-    return os;
+        os << code;
 }
 
 bool Instruction::immediate_execution() const {
@@ -118,7 +117,7 @@ static inline bool cntvar( char a ) { return begvar( a ) or number( a ); }
 bool Instruction::needs_data() const {
     if ( code.size() ) {
         for( int res = code.find( "data" ); res >= 0; res = code.find( "data", res + 4 ) )
-            if ( ( res == 0 or not cntvar( code[ res - 1 ] ) ) and ( res + 4 == code.size() or not cntvar( code[ res + 4 ] ) ) )
+            if ( ( res == 0 or not cntvar( code[ res - 1 ] ) ) and ( unsigned( res + 4 ) == code.size() or not cntvar( code[ res + 4 ] ) ) )
                 return true;
     }
     //    if ( func ) {
@@ -154,6 +153,8 @@ bool Instruction::_can_lead_to_rec( const Instruction *dst, const std::set<const
         return true;
 
     for( int i = 0; i < next.size(); ++i ) {
+        if ( next[ i ] == dst )
+            return true;
         if ( not allowed.count( next[ i ] ) )
             continue;
         if ( next[ i ]->_can_lead_to_rec( dst, allowed ) )

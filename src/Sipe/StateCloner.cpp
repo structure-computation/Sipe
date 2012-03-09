@@ -1,6 +1,6 @@
 #include "StateCloner.h"
 
-StateCloner::StateCloner( Vec<State *> &to_del, Vec<State *> &use_mark_stack ) : to_del( to_del ), use_mark_stack( use_mark_stack ) {
+StateCloner::StateCloner( Vec<State *> &to_del, Vec<State *> &use_mark_stack ) : use_mark_stack( use_mark_stack ), to_del( to_del ) {
 }
 
 State *StateCloner::make( State *src, State *dst ) {
@@ -42,10 +42,7 @@ State *StateCloner::_make_rec( Scp &p, const char *msg ) {
     Vec<const Instruction *> vi;
     int an = -1;
     for( int i = 0; i < p.state->instructions.size(); ++i ) {
-        std::set<const Instruction *> allowed = p.dst->visited;
-        allowed.insert( p.dst->instructions[ 0 ] );
-
-        if ( p.state->instructions[ i ]->can_lead_to( p.dst->instructions[ 0 ], allowed ) ) {
+        if ( p.state->instructions[ i ]->can_lead_to( p.dst->instructions[ 0 ], p.dst->visited ) ) {
             if ( p.state->action_num == i )
                 an = vi.size();
             vi << p.state->instructions[ i ];

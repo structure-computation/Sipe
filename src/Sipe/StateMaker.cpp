@@ -42,6 +42,7 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
             // if no data dependant actions (due to the instructions or the paths)
             Vec<const Instruction *> undep;
             if ( not nst->has_data_dependant_actions( undep ) ) {
+                nst = 0;
                 State *cur = 0, *old = 0;
                 for( int i = 0; i < undep.size(); ++i ) {
                     cur = new State;
@@ -58,7 +59,8 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
             }
             // nst->display_dot( ".nst", 0, false );
 
-            dst->insert_between_this_and_next( nst );
+            if ( nst )
+                dst->insert_between_this_and_next( nst );
         } else {
             use_mark_stack.resize( os_use_mark_stack );
             dst->rem_mark = dst->use_mark;
@@ -66,10 +68,11 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
         }
 
         smk->used_marks << dst->use_mark;
-        P( smk->used_marks );
-        //        std::ostringstream ss;
-        //        ss << ".state_" << nst << ".dot";
-        //        nst->display_dot( ss.str().c_str() );
+        // P( smk );
+        // P( smk->used_marks );
+        // std::ostringstream ss;
+        // ss << ".state_" << nst << ".dot";
+        // nst->display_dot( ss.str().c_str() );
     }
 
     return res->simplified();
@@ -89,7 +92,8 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
     // we have pending code / func wo data and we know that all the branches will go to the end
     if ( State *res = _use_pact( p ) ) return res;
 
-    // we have pending code / func and we know that all the branches will go to the end
+    // we have pending code / func and we know that all the branches will go to the end...
+    // or the number of possible instructions for pending are now = 1
     if ( State *res = _use_pend( p ) ) return res;
 
     // no more work -> exit
@@ -158,9 +162,7 @@ State *StateMaker::_rm_twice( Smp &p ) {
 
 State *StateMaker::_use_pact( Smp &p ) {
     if ( p.paction.size() and p.ok.size() == 1 ) {
-        std::set<const Instruction *> allowed = p.visited;
-        allowed.insert( p.ok[ 0 ] );
-        if ( p.paction[ 0 ]->can_lead_to( p.ok[ 0 ], allowed ) ) {
+        if ( p.paction[ 0 ]->can_lead_to( p.ok[ 0 ], p.visited ) ) {
             State *res = _new_State( p );
             res->action = p.paction[ 0 ];
             p.paction.remove( 0 );
@@ -175,14 +177,38 @@ State *StateMaker::_use_pact( Smp &p ) {
 }
 
 State *StateMaker::_use_pend( Smp &p ) {
-    if ( p.pending and p.ok.size() == 1 ) {
-        State *res = _new_State( p );
-        res->use_mark = p.pending;
-        p.pending = 0;
-        res->add_next( _make_rec( p, "use_pend" ) );
-        use_mark_stack << res;
-        return res;
+    if ( p.pending ) {
+        bool use = true;
+
+        // if no surely leads to the end, test if all pending state have nb possible inst = 1
+        if ( p.ok.size() != 1 ) {
+            if ( p.pending_list.size() ) {
+                for( int i = 0; i < p.pending_list.size(); ++i ) {
+                    int nb_possible = 0;
+                    for( int j = 0; j < p.pending_list[ i ]->instructions.size(); ++j ) {
+                        bool loc = false;
+                        for( int k = 0; k < p.ok.size() and loc == false; ++k )
+                            loc |= p.pending_list[ i ]->instructions[ j ]->can_lead_to( p.ok[ k ], p.visited );
+                        nb_possible += loc;
+                    }
+                    use &= nb_possible == 1;
+                }
+            } else
+                use = false;
+        }
+
+        //
+        if ( use ) {
+            State *res = _new_State( p );
+            p.pending_list.resize( 0 );
+            res->use_mark = p.pending;
+            use_mark_stack << res;
+            p.pending = 0;
+            res->add_next( _make_rec( p, "use_pend" ) );
+            return res;
+        }
     }
+
 
     return 0;
 }
@@ -348,15 +374,17 @@ State *StateMaker::_jmp_code( Smp &p ) {
 
             // add a mark if necessary (-> p.pending)
             if ( p.ok.size() > 1 and not p.pending ) {
-                    State *res = _new_State( p );
-                    res->set_mark = true;
-                    p.pending = res;
-                    res->add_next( _make_rec( p, "mk pend" ) );
-                    return res;
+                State *res = _new_State( p );
+                res->set_mark = true;
+                p.pending = res;
+                res->add_next( _make_rec( p, "mk pend" ) );
+                return res;
             }
 
             // else (or after that), create a state with the instructions
             State *res = _new_State( p );
+            if ( p.pending )
+                p.pending_list << res;
             res->action_num = i;
             p.next( i );
 

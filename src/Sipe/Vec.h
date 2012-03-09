@@ -75,10 +75,10 @@ public:
     }
 
     template<class F>
-    void replace( int ind, const Vec<F> &vec ) { ///< replace index i by items of vec
+    void replace( unsigned ind, const Vec<F> &vec ) { ///< replace index i by items of vec
         std::vector<T> old = data;
         resize( 0 );
-        for( int i = 0; i < old.size(); ++i )
+        for( unsigned i = 0; i < old.size(); ++i )
             if ( i == ind )
                 operator<<( vec );
             else
