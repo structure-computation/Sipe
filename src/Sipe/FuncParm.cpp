@@ -33,6 +33,11 @@ void FuncParm::remove( String key ) {
             n_params.remove( i-- );
 }
 
+void FuncParm::clear() {
+    u_params.resize( 0 );
+    n_params.resize( 0 );
+}
+
 std::ostream &operator<<( std::ostream &os, const FuncParm &func_parm ) {
     for( int i = 0; i < func_parm.u_params.size(); ++i )
         os << ( i ? "," : "" ) << func_parm.u_params[ i ];

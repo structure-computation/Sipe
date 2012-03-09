@@ -4,6 +4,7 @@
 #include "Instruction.h"
 #include "LexemMaker.h"
 #include "FuncParm.h"
+#include <map>
 
 /**
 */
@@ -15,9 +16,18 @@ public:
     Instruction *make( const char *name );
 
 protected:
-    Instruction *app( Instruction *inst, const Lexem *lex, FuncParm params, double freq );
-    Instruction *app( Instruction *inst, Instruction *next );
+    struct Par {
+        std::map<String,Instruction *> lab_to_inst;
+        Vec<Instruction *> goto_inst;
+        FuncParm params;
+        double freq;
+    };
 
+    Instruction *app( Instruction *inst, const Lexem *lex, Par par );
+    Instruction *app( Instruction *inst, Instruction *next );
+    void _get_labels_rec( const Lexem *lex );
+
+    std::map<String,Instruction> labels;
     Vec<Instruction *> to_del;
     LexemMaker &lexem_maker;
 };

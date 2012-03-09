@@ -213,7 +213,7 @@ void Language_C::_write_parse_file_func( std::ostream &os ) {
     on << "    char buffer[ 2048 ];";
     on << "    while ( true ) {";
     on << "        int r = read( fd, buffer, 2048 );";
-    on << "        printf( \"r=%i\\n\", r );";
+    // on << "        printf( \"r=%i\\n\", r );";
     on << "        if ( r == 0 )";
     on << "            return 0;";
     on << "        if ( int res = parse" << f_suf << "( &sd, buffer, buffer + r ) )";

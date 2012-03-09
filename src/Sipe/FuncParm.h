@@ -15,6 +15,7 @@ public:
     String operator[]( String key ) const;
     bool has( String key ) const;
     void remove( String key );
+    void clear();
 
     Vec<String> u_params;
     Vec<NamedP> n_params;

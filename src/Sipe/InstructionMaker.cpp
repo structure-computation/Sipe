@@ -1,5 +1,6 @@
 #include "InstructionMaker.h"
 #include "Instruction.h"
+#include <string.h>
 #include <stdlib.h>
 
 static String repl_parm( String str, const FuncParm &params ) {
@@ -24,17 +25,12 @@ InstructionMaker::~InstructionMaker() {
 }
 
 Instruction *InstructionMaker::make( const char *name ) {
-    // find $name
-    const Lexem *lex = lexem_maker[ name ];
-    if ( not lex ) {
-        String msg = "Impossible to find a machine named '" + String( name ) + "'";
-        lexem_maker.err( 0, msg.c_str() );
-        return 0;
-    }
+    Lexem main( Lexem::VARIABLE, 0, name, name + strlen( name ) );
 
     // graph from $name
+    Par par; par.freq = 1;
     Instruction *res = new Instruction( 0, 0 );
-    Instruction *end = app( res, lex, FuncParm(), 1 );
+    Instruction *end = app( res, &main, par );
 
     // ok end
     end = app( end, new Instruction( 0, 1, Instruction::OK ) );
@@ -46,18 +42,18 @@ Instruction *InstructionMaker::make( const char *name ) {
     return res;
 }
 
-Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, FuncParm params, double freq ) {
-    String f = params["freq"];
+Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par ) {
+    String f = par.params["freq"];
     if ( f.size() )
-        freq = atof( f.c_str() );
-    params.remove( "freq" );
+        par.freq = atof( f.c_str() );
+    par.params.remove( "freq" );
 
     //
     for( ; lex and not lex->eq( Lexem::OPERATOR, "=" ); lex = lex->next ) {
         if ( lex->type == Lexem::VARIABLE ) {
             if ( lex->beg[ 0 ] == '_' ) {
                 // -> internal function call
-                src = app( src, new Instruction( lex, freq, Func( lex->beg, lex->end, params ) ) );
+                src = app( src, new Instruction( lex, par.freq, Func( lex->beg, lex->end, par.params ) ) );
             } else if ( const Lexem *nex = lexem_maker( lex->beg, lex->end ) ) {
                 // -> machine call
                 if ( nex->prev and nex->prev->eq( Lexem::OPERATOR, "=" ) and nex->prev->children[ 0 ]->eq( Lexem::OPERATOR, "[" ) ) {
@@ -73,22 +69,22 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, FuncParm
                             ++nb_with_default_values;
                             c = c->next;
 
-                            if ( not params.has( key ) ) {
-                                if ( num_parm < params.u_params.size() )
-                                    params.set( key, params.u_params[ num_parm ] );
+                            if ( not par.params.has( key ) ) {
+                                if ( num_parm < par.params.u_params.size() )
+                                    par.params.set( key, par.params.u_params[ num_parm ] );
                                 else
-                                    params.set( key, String( c->beg, c->end ) );
+                                    par.params.set( key, String( c->beg, c->end ) );
                             }
                         } else {
                             String key( c->beg, c->end );
                             if ( nb_with_default_values ) {
                                 lexem_maker.err( c, "Params without default value cannot exist after params with ones." );
-                            } else if ( num_parm < params.u_params.size() ) {
-                                if ( params.has( key ) )
+                            } else if ( num_parm < par.params.u_params.size() ) {
+                                if ( par.params.has( key ) )
                                     lexem_maker.err( lex, "Param is already defined." );
                                 else
-                                    params.set( key, params.u_params[ num_parm ] );
-                            } else if ( not params.has( key ) ) {
+                                    par.params.set( key, par.params.u_params[ num_parm ] );
+                            } else if ( not par.params.has( key ) ) {
                                 lexem_maker.err( lex, "Not enough parameters." );
                             }
                         }
@@ -97,60 +93,67 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, FuncParm
                     }
 
                 }
-                src = app( src, nex, params, freq );
+                src = app( src, nex, par );
             } else
                 lexem_maker.err( lex, "Machine not found." );
         } else if ( lex->type == Lexem::STRING ) {
             for( const char *s = lex->beg; s != lex->end; ++s ) {
-                src = app( src, new Instruction( lex, freq, 1 ) );
-                src = app( src, new Instruction( lex, freq, Cond( *s ) ) );
+                src = app( src, new Instruction( lex, par.freq, 1 ) );
+                src = app( src, new Instruction( lex, par.freq, Cond( *s ) ) );
             }
         } else if ( lex->type == Lexem::NUMBER ) {
-            src = app( src, new Instruction( lex, freq, 1 ) );
-            src = app( src, new Instruction( lex, freq, Cond( lex->to_int() ) ) );
+            src = app( src, new Instruction( lex, par.freq, 1 ) );
+            src = app( src, new Instruction( lex, par.freq, Cond( lex->to_int() ) ) );
         } else if ( lex->type == Lexem::CODE ) {
-            src = app( src, new Instruction( lex, freq, repl_parm( String( lex->beg, lex->end ), params ) ) );
+            src = app( src, new Instruction( lex, par.freq, repl_parm( String( lex->beg, lex->end ), par.params ) ) );
         } else if ( lex->type == Lexem::OPERATOR ) {
             if ( lex->eq( "|" ) ) {
                 Instruction *beg = src;
-                src = new Instruction( lex, freq );
+                src = new Instruction( lex, par.freq );
                 for( int i = 0; i < 2; ++i )
-                    app( app( beg, lex->children[ i ], params, freq ), src );
+                    app( app( beg, lex->children[ i ], par ), src );
             } else if ( lex->eq( "**" ) ) { // priority to exit from the loop
-                src = app( src, new Instruction( lex, freq ) ); // because we want to loop at the beginning of this (not to the previous instruction)
-                app( app( src, lex->children[ 0 ], params, freq ), src );
+                src = app( src, new Instruction( lex, par.freq ) ); // because we want to loop at the beginning of this (not to the previous instruction)
+                app( app( src, lex->children[ 0 ], par ), src );
             } else if ( lex->eq( "*" ) ) { // priority to stay inside the loop
-                Instruction *comm = app( src, new Instruction( lex, freq ) ); // because we want to loop at he beginning of this (not to the previous instruction)
-                src = app( comm, new Instruction( lex, freq ) ); // first branch -> priority to exit from the loop
-                app( app( comm, lex->children[ 0 ], params, freq ), comm );
-            } else if ( lex->eq( "?" ) ) { // zero or one
-                src = app( src, app( app( src, lex->children[ 0 ], params, freq ), new Instruction( lex, freq ) ) );
+                Instruction *comm = app( src, new Instruction( lex, par.freq ) ); // because we want to loop at he beginning of this (not to the previous instruction)
+                src = app( comm, new Instruction( lex, par.freq ) ); // first branch -> priority to exit from the loop
+                app( app( comm, lex->children[ 0 ], par ), comm );
+            } else if ( lex->eq( "??" ) ) { // zero or one. prefer to go into
+                src = app( src, app( app( src, lex->children[ 0 ], par ), new Instruction( lex, par.freq ) ) );
+            } else if ( lex->eq( "?" ) ) { // zero or one. prefer to avoid
+                Instruction *old = src;
+                src = app( src, new Instruction( lex, par.freq ) );
+                app( app( old, lex->children[ 0 ], par ), src );
             } else if ( lex->eq( "+" ) ) { // one or more (priority to exit)
-                src = app( src, lex->children[ 0 ], params, freq );
+                src = app( src, lex->children[ 0 ], par );
 
-                Instruction *comm = app( src, new Instruction( lex, freq ) ); // because we want to loop at he beginning of this (not to the previous instruction)
-                src = app( comm, new Instruction( lex, freq ) ); // first branch -> priority to exit from the loop
-                app( app( comm, lex->children[ 0 ], params, freq ), comm );
+                Instruction *comm = app( src, new Instruction( lex, par.freq ) ); // because we want to loop at he beginning of this (not to the previous instruction)
+                src = app( comm, new Instruction( lex, par.freq ) ); // first branch -> priority to exit from the loop
+                app( app( comm, lex->children[ 0 ], par ), comm );
             } else if ( lex->eq( "++" ) ) { // one or more (with priority to stay inside)
-                src = app( src, lex->children[ 0 ], params, freq );
+                src = app( src, lex->children[ 0 ], par );
 
-                src = app( src, new Instruction( lex, freq ) ); // because we want to loop at the beginning of this (not to the previous instruction)
-                app( app( src, lex->children[ 0 ], params, freq ), src );
+                src = app( src, new Instruction( lex, par.freq ) ); // because we want to loop at the beginning of this (not to the previous instruction)
+                app( app( src, lex->children[ 0 ], par ), src );
             } else if ( lex->eq( ".." ) ) {
-                Instruction *t = new Instruction( lex, freq );
-                Instruction *a = app( t, lex->children[ 0 ], params, freq );
-                Instruction *b = app( t, lex->children[ 1 ], params, freq );
+                Instruction *t = new Instruction( lex, par.freq );
+                Instruction *a = app( t, lex->children[ 0 ], par );
+                Instruction *b = app( t, lex->children[ 1 ], par );
                 int na = a->ascii_val();
                 int nb = b->ascii_val();
                 if ( na < 0 or nb < 0 )
                     lexem_maker.err( lex, ".. must be between two strings with only one char" );
-                src = app( src, new Instruction( lex, freq, 1 ) );
-                src = app( src, new Instruction( lex, freq, Cond( na, nb ) ) );
+                src = app( src, new Instruction( lex, par.freq, 1 ) );
+                src = app( src, new Instruction( lex, par.freq, Cond( na, nb ) ) );
                 del( t );
+            // } else if ( lex->eq( "->" ) ) { // goto
+            // } else if ( lex->eq( "<-" ) ) { // label
             } else if ( lex->eq( "(" ) ) {
-                src = app( src, lex->children[ 0 ], params, freq );
+                src = app( src, lex->children[ 0 ], par );
             } else if ( lex->eq( "[" ) ) {
-                FuncParm n_params;
+                Par n_par = par;
+                n_par.params.clear();
                 for( const Lexem *c = lex->children[ 1 ]; c; c = c->next ) {
                     if ( c->eq( Lexem::OPERATOR, "," ) )
                         continue;
@@ -158,11 +161,11 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, FuncParm
                     if ( c->eq( Lexem::OPERATOR, "=" ) and c->next ) { // named param ?
                         String name( c->children[ 0 ]->beg, c->children[ 0 ]->end );
                         c = c->next;
-                        n_params.n_params << FuncParm::NamedP( name, repl_parm( String( c->beg, c->end ), params ) );
+                        n_par.params.n_params << FuncParm::NamedP( name, repl_parm( String( c->beg, c->end ), par.params ) );
                     } else
-                        n_params.u_params << repl_parm( String( c->beg, c->end ), params );
+                        n_par.params.u_params << repl_parm( String( c->beg, c->end ), par.params );
                 }
-                src = app( src, lex->children[ 0 ], n_params, freq );
+                src = app( src, lex->children[ 0 ], n_par );
             }
         }
     }
