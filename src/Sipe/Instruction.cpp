@@ -202,6 +202,8 @@ void Instruction::_write_dot_rec( std::ostream &os ) const {
             os << " [label=\"" << u << "\"]";
         os << ";\n";
     }
+    //for( int u = 0; u < prev.size(); ++u )
+    //    os << "  node_" << prev[ u ] << " -> node_" << this << " [color=\"red\"];\n";
 }
 
 bool Instruction::_get_next_conds_rec( Vec<const Instruction *> &conds, int nb_incc_allowed ) const {

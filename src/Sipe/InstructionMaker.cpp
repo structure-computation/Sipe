@@ -42,8 +42,24 @@ Instruction *InstructionMaker::make( const char *name ) {
     return res;
 }
 
+void InstructionMaker::_get_labels_rec( std::map<String,Instruction *> &labels, const Lexem *lex ) {
+    if ( lex->eq( Lexem::OPERATOR, "=" ) )
+        return;
+
+    if ( lex->eq( Lexem::OPERATOR, "<-" ) ) {
+        String label( lex->children[ 0 ]->beg, lex->children[ 0 ]->end );
+        if ( labels.count( label ) )
+            lexem_maker.err( lex->children[ 0 ], "This label has already been defined." );
+        else
+            labels[ label ] = new Instruction( lex, 1 );
+    }
+    if ( lex->children[ 0 ] ) _get_labels_rec( labels, lex->children[ 0 ] );
+    if ( lex->children[ 1 ] ) _get_labels_rec( labels, lex->children[ 1 ] );
+    if ( lex->next          ) _get_labels_rec( labels, lex->next          );
+}
+
 Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par ) {
-    String f = par.params["freq"];
+    String f = par.params[ "freq" ];
     if ( f.size() )
         par.freq = atof( f.c_str() );
     par.params.remove( "freq" );
@@ -93,7 +109,14 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par 
                     }
 
                 }
-                src = app( src, nex, par );
+
+
+                Par n_par = par;
+                std::map<String,Instruction *> labels;
+                n_par.labels = &labels;
+                _get_labels_rec( labels, nex );
+
+                src = app( src, nex, n_par );
             } else
                 lexem_maker.err( lex, "Machine not found." );
         } else if ( lex->type == Lexem::STRING ) {
@@ -147,8 +170,14 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par 
                 src = app( src, new Instruction( lex, par.freq, 1 ) );
                 src = app( src, new Instruction( lex, par.freq, Cond( na, nb ) ) );
                 del( t );
-            // } else if ( lex->eq( "->" ) ) { // goto
-            // } else if ( lex->eq( "<-" ) ) { // label
+            } else if ( lex->eq( "->" ) ) { // goto
+                String label( lex->children[ 0 ]->beg, lex->children[ 0 ]->end );
+                app( src, (*par.labels)[ label ] );
+                src = 0;
+            } else if ( lex->eq( "<-" ) ) { // label
+                String label( lex->children[ 0 ]->beg, lex->children[ 0 ]->end );
+                Instruction *inst = (*par.labels)[ label ];
+                src = src ? app( src, inst ) : inst;
             } else if ( lex->eq( "(" ) ) {
                 src = app( src, lex->children[ 0 ], par );
             } else if ( lex->eq( "[" ) ) {
@@ -174,10 +203,12 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par 
 }
 
 Instruction *InstructionMaker::app( Instruction *inst, Instruction *next ) {
-    if ( next ) {
+    if ( not inst )
+        return 0;
+    if ( inst and next ) {
         inst->next << next;
         next->prev << inst;
         return next;
     }
-    return inst;
+    return next;
 }

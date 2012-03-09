@@ -17,15 +17,14 @@ public:
 
 protected:
     struct Par {
-        std::map<String,Instruction *> lab_to_inst;
-        Vec<Instruction *> goto_inst;
+        std::map<String,Instruction *> *labels;
         FuncParm params;
         double freq;
     };
 
+    void _get_labels_rec( std::map<String,Instruction *> &labels, const Lexem *lex );
     Instruction *app( Instruction *inst, const Lexem *lex, Par par );
     Instruction *app( Instruction *inst, Instruction *next );
-    void _get_labels_rec( const Lexem *lex );
 
     std::map<String,Instruction> labels;
     Vec<Instruction *> to_del;

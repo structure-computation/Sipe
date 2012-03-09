@@ -1,7 +1,7 @@
 MC = metil_comp -Wall -Isrc -g3 src/Sipe/sipe.cpp 
 
 all:
-	${MC} -ds -di -ws -e tests/http.sipe.py
+	${MC} -di -ws -e tests/http.sipe.py
 
 exe:
 	${MC} -e tests/http.sipe.py

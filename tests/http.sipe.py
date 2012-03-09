@@ -65,11 +65,11 @@ main =
     e400
 
 main =
-   'A' 'B'? 'C'
-
-##    -> pouet
-#    pd
-#    <- pouet
-
+    ( 'A' |
+      ( 'B' -> pouet )  |
+      'C'
+    )
+    'D'
+    <- pouet
 
 
