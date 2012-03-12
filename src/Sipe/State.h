@@ -30,15 +30,14 @@ public:
     int  display_dot( const char *f = ".state.dot", const char *prg = 0, bool par = true ) const;
 
     //
-    Vec<const Instruction *> instructions;
-    std::set<const Instruction *> visited;
+    // Vec<const Instruction *> instructions;
+    // std::set<const Instruction *> visited;
     const Instruction *action; ///<
     Vec<bool> used_marks; ///< if set_mark
     Vec<State *> prev;
     bool   set_mark;
     State *use_mark;
     State *rem_mark;
-    int action_num;
     Vec<Next> next;
     int incc;
     int end;

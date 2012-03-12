@@ -158,11 +158,7 @@ void Language_C::_write_parse_func( std::ostream &os ) {
 
         //
         if ( b->state ) {
-            // action with data ?
-            if ( b->state->action_num >= 0 )
-                b->state->instructions[ b->state->action_num ]->write_code( on, this );
-
-            // action without data
+            // action
             if ( b->state->action )
                 b->state->action->write_code( on, this );
 

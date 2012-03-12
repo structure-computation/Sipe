@@ -20,11 +20,13 @@ public:
     std::set<const Instruction *> visited;
     Vec<const Instruction *> paction; ///< pending "no data" actions
     Vec<const Instruction *> ok;
-    Vec<State *> pending_list;
     String display_prefix;
+    bool leads_to_ends;
+    State *has_a_mark;
+
     bool display_steps;
+    Vec<Smp> pending;
     bool allow_incc;
-    State *pending;
     Ctr<Cond> cond;
 };
 

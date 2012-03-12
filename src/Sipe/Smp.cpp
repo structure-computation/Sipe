@@ -2,9 +2,10 @@
 #include "Smp.h"
 
 Smp::Smp() {
+    leads_to_ends = false;
     display_steps = false;
     allow_incc = true;
-    pending = 0;
+    has_a_mark = 0;
 }
 
 String Smp::bid() const {
@@ -15,9 +16,11 @@ String Smp::bid() const {
     for( int i = 0; i < paction.size(); ++i )
         os << " P" << paction[ i ];
 
-    if ( pending )
-        os << " [pending=" << pending << "]";
+    for( int i = 0; i < pending.size(); ++i )
+        os << " [pending=" << pending[ i ] << "]";
 
+    if ( has_a_mark )
+        os << " [has_a_mark]";
 
     if ( cond ) {
         Vec<const Instruction *> nc;
@@ -67,7 +70,9 @@ std::ostream &operator<<( std::ostream &os, const Smp &p ) {
         os << " [cond=" << *p.cond << "]";
     if ( not p.allow_incc )
         os << " [no incc]";
-    if ( p.pending )
-        os << " [pending=" << p.pending << "]";
+    for( int i = 0; i < p.pending.size(); ++i )
+        os << " [pending=" << p.pending[ i ] << "]";
+    if ( p.has_a_mark )
+        os << " [has_a_mark]";
     return os; // << " " << p.bid();
 }

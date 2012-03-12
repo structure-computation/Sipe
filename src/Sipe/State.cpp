@@ -9,7 +9,6 @@ int State::cur_op_id = 0;
 State::State() {
     op_id = 0;
 
-    action_num = -1;
     action   = 0;
     set_mark = 0;
     use_mark = 0;
@@ -60,18 +59,6 @@ std::ostream &State::write_label( std::ostream &os, int lim ) const {
         os << ( end == 2 ? "KO" : "OK" );
     if ( action )
         action->write_label( os );
-
-    if ( action_num >= 0 ) {
-        for( int i = 0; i < instructions.size(); ++i ) {
-            if ( action_num == i )
-                os << "<";
-            os << *instructions[ i ];
-            if ( action_num == i )
-                os << ">";
-            if ( i + 1 < instructions.size() )
-                os << " or\\n";
-        }
-    }
 
     //for( int i = 0; i < paths.ends.size(); ++i )
     //    os << ( i ? " or\\n" : "" ) << *paths.ends[ i ];
@@ -177,8 +164,7 @@ State *State::simplified() {
 }
 
 bool State::will_write_something() const {
-    return action_num >= 0 or
-           action or
+    return action or
            end or
            set_mark or
            use_mark or
@@ -272,13 +258,11 @@ bool State::_is_interesting_rec( bool take_incc_into_account, bool take_nb_next_
 }
 
 bool State::_is_interesting( bool take_incc_into_account, bool take_nb_next_into_account ) const {
-    return
-            ( action_num == 0 and instructions.size() == 1 and not instructions[ 0 ]->end ) or
-            ( next.size() != 1 and take_nb_next_into_account ) or
+    return  ( next.size() != 1 and take_nb_next_into_account ) or
             ( incc and take_incc_into_account ) or
             action or
-            ( set_mark and used_marks.any() ) or
-            ( rem_mark and rem_mark->used_marks.any() ) or
+            ( set_mark /*and used_marks.any()*/ ) or
+            ( rem_mark /*and rem_mark->used_marks.any()*/ ) or
             use_mark;
 }
 
@@ -375,20 +359,21 @@ bool State::_has_data_dependant_actions_rec( Vec<const Instruction *> &undep, bo
         return false;
     op_id = cur_op_id;
 
-    // remaining doubts ?
-    if ( action_num >= 0 and instructions.size() >= 2 )
-        return true;
+    assert( 0 );
+    //    // remaining doubts ?
+    //    if ( action_num >= 0 and instructions.size() >= 2 )
+    //        return true;
 
-    // needs data ?
-    if ( action_num >= 0 ) {
-        if ( allow_undep_actions == false or instructions[ action_num ]->needs_data() )
-            return true;
-        undep << instructions[ action_num ];
-    }
+    //    // needs data ?
+    //    if ( action_num >= 0 ) {
+    //        if ( allow_undep_actions == false or instructions[ action_num ]->needs_data() )
+    //            return true;
+    //        undep << instructions[ action_num ];
+    //    }
 
-    for( int i = 0; i < next.size(); ++i )
-        if ( next[ i ].s->_has_data_dependant_actions_rec( undep, allow_undep_actions and next.size() == 1 ) )
-            return true;
+    //    for( int i = 0; i < next.size(); ++i )
+    //        if ( next[ i ].s->_has_data_dependant_actions_rec( undep, allow_undep_actions and next.size() == 1 ) )
+    //            return true;
     return false;
 }
 
@@ -397,7 +382,7 @@ bool State::_has_something_to_execute_rec( bool take_incc_into_account ) const {
         return false;
     op_id = cur_op_id;
 
-    if ( action_num >= 0 and not instructions[ action_num ]->end )
+    if ( action )
         return true;
 
     if ( incc and take_incc_into_account )

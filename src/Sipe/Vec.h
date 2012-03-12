@@ -20,6 +20,8 @@ public:
 
     int size() const { return data.size(); }
 
+    operator bool() const { return size(); }
+
     T operator[]( int i ) const { return data[ i ]; }
     T &operator[]( int i ) { return data[ i ]; }
 
