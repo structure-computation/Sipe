@@ -30,3 +30,21 @@ uint[ val ] =
     ( digit { sipe_data->val = 10 * sipe_data->val + ( *data - '0' ); } )**
 
 
+# print a char
+p[ msg ] =
+    _add_prel[ '#include <iostream>' ]
+    { std::cout << "msg" << std::endl; }
+
+# print "value -> $value"
+i[ val ] =
+    #_add_prel[ '#ifdef SIPE_MAIN' ]
+    #_add_prel[ '#include <iostream>' ]
+    #_add_prel[ '#endif // SIPE_MAIN' ]
+    { std::cout << "val -> " << val << std::endl; }
+
+# print a value (by default, print current char)
+d[ val = "*data" ] =
+    _add_prel[ '#ifdef SIPE_MAIN' ]
+    _add_prel[ '#include <iostream>' ]
+    _add_prel[ '#endif // SIPE_MAIN' ]
+    { std::cout << val; }

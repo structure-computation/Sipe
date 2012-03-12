@@ -10,7 +10,7 @@ class StateCloner {
 public:
     StateCloner( Vec<State *> &to_del, Vec<State *> &use_mark_stack );
 
-    State *make( State *src, State *dst );
+    State *make( State *smk, State *dst );
 
 protected:
     State *_new_State( Scp &p );

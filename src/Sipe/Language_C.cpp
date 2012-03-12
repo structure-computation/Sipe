@@ -11,6 +11,7 @@ Language_C::~Language_C() {
 
 void Language_C::write( std::ostream &os, const State *state, bool write_main ) {
     // helpers
+    StreamSepMaker<std::ostream> on( os );
     f_suf = cpp ? "" : "_" + struct_name;
 
     // unfold and get label
@@ -20,26 +21,34 @@ void Language_C::write( std::ostream &os, const State *state, bool write_main ) 
 
     // hum...
     if ( write_main ) {
-        StreamSepMaker<std::ostream> on( os );
         on << "#ifdef SIPE_MAIN";
+        on << "#include <unistd.h>";
         on << "#include <stdio.h>";
+        on << "#include <fcntl.h>";
         on << "#endif // SIPE_MAIN";
     }
 
     //
     _write_preliminaries( os );
+
     _write_declarations( os );
+
     _write_parse_func( os );
-    _write_init_func( os );
-    _write_dest_func( os );
+
+    if ( not cpp ) {
+        on << "void init" << f_suf << "( " << struct_name << " *sipe_data ) {";
+        _write_init_func( os, "    ", "sipe_data->" );
+        on << "}";
+
+        on << "void dest" << f_suf << "( " << struct_name << " *sipe_data ) {";
+        _write_dest_func( os, "    ", "sipe_data->" );
+        on << "}";
+    }
 
     //
     if ( write_main ) {
         StreamSepMaker<std::ostream> on( os );
         on << "#ifdef SIPE_MAIN";
-        on << "#include <unistd.h>";
-        on << "#include <fcntl.h>";
-        // on << "#include <stdio.h>";
         _write_parse_file_func( os );
         _write_main_func( os );
         on << "#endif // SIPE_MAIN";
@@ -49,23 +58,30 @@ void Language_C::write( std::ostream &os, const State *state, bool write_main ) 
 void Language_C::_write_preliminaries( std::ostream &os ) {
     StreamSepMaker<std::ostream> on( os );
 
-    // preliminaries
+    // includes, ...
     for( int i = 0; i < preliminaries.size(); ++i )
         on << preliminaries[ i ];
+
+    //
+    if ( not cpp ) {
+        on << "struct " << struct_name << ";";
+        on << "void init" << f_suf << "( " << struct_name << " *sipe_data );";
+        on << "void dest" << f_suf << "( " << struct_name << " *sipe_data );";
+    }
 }
 
 void Language_C::_write_declarations( std::ostream &os ) {
     StreamSepMaker<std::ostream> on( os );
 
-    on << "struct " << struct_name << ";";
-    on << "void init" << f_suf << "( " << struct_name << " *sipe_data );";
-    on << "void dest" << f_suf << "( " << struct_name << " *sipe_data );";
-
     // struct
     on << "struct " << struct_name << " {";
     if ( cpp ) {
-        on << "    " << struct_name << "() { init" << f_suf << "( this ); }";
-        on << "    ~" << struct_name << "() { dest" << f_suf << "( this ); }";
+        on << "    " << struct_name << "() {";
+        _write_init_func( os, "        ", "" );
+        on << "    }";
+        on << "    ~" << struct_name << "() {";
+        _write_dest_func( os, "        ", "" );
+        on << "    }";
         on << "";
     }
     on << "    void *_inp_cont;";
@@ -76,29 +92,30 @@ void Language_C::_write_declarations( std::ostream &os ) {
     on << "};";
 }
 
-void Language_C::_write_init_func( std::ostream &os ) {
+void Language_C::_write_init_func( std::ostream &os, const char *sp, const char *sn ) {
     StreamSepMaker<std::ostream> on( os );
-    // init
-    on << "void init" << f_suf << "( " << struct_name << " *sipe_data ) {";
-    on << "    sipe_data->_inp_cont = 0;";
-    if ( need_a_mark )
-        on << "    sipe_data->_mark = 0;";
+    on.beg = sp;
 
+    on << sn << "_inp_cont = 0;";
+    if ( need_a_mark )
+        on << sn << "_mark = 0;";
+
+    if ( attributes.size() and cpp )
+        on << f_suf << " *sipe_data = this;";
     for( int i = 0; i < attributes.size(); ++i )
         if ( attributes[ i ].init.size() )
-            os << "    " << attributes[ i ].init << ";";
-    on << "}";
+            on << attributes[ i ].init << ";";
 }
 
-void Language_C::_write_dest_func( std::ostream &os ) {
+void Language_C::_write_dest_func( std::ostream &os, const char *sp, const char *sn ) {
     StreamSepMaker<std::ostream> on( os );
+    on.beg = sp;
 
-    // dest
-    on << "void dest" << f_suf << "( " << struct_name << " *sipe_data ) {";
+    if ( attributes.size() and cpp )
+        on << f_suf << " *sipe_data = this;";
     for( int i = 0; i < attributes.size(); ++i )
         if ( attributes[ i ].dest.size() )
-            os << "    " << attributes[ i ].dest << ";";
-    on << "}";
+            os << attributes[ i ].dest << ";";
 }
 
 static int nb_digits( int val ) {

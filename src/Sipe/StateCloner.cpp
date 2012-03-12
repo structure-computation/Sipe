@@ -3,10 +3,10 @@
 StateCloner::StateCloner( Vec<State *> &to_del, Vec<State *> &use_mark_stack ) : use_mark_stack( use_mark_stack ), to_del( to_del ) {
 }
 
-State *StateCloner::make( State *src, State *dst ) {
-    dst->prev_mark( src );
+State *StateCloner::make( State *smk, State *dst ) {
+    dst->prev_mark( smk );
 
-    Scp p( src, dst );
+    Scp p( smk->next[ 0 ].s, dst );
     return _make_rec( p, "orig" );
 }
 

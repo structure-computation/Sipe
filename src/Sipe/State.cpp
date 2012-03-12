@@ -322,13 +322,15 @@ void State::_repl_mark_rec() {
 }
 
 void State::_prev_mark_rec( State *stop_at ) const {
+    if ( this == stop_at )
+        return;
+
     if ( op_id == cur_op_id )
         return;
     op_id = cur_op_id;
 
-    if ( this != stop_at )
-        for( int i = 0; i < prev.size(); ++i )
-            prev[ i ]->_prev_mark_rec( stop_at );
+    for( int i = 0; i < prev.size(); ++i )
+        prev[ i ]->_prev_mark_rec( stop_at );
 }
 
 void State::_get_children_rec( Vec<State *> &res ) {

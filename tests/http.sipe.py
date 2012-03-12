@@ -1,15 +1,3 @@
-p[ msg ] =
-    _add_prel[ '#include <iostream>' ]
-    { std::cout << "msg" << std::endl; }
-
-i[ val ] =
-    _add_prel[ '#include <iostream>' ]
-    { std::cout << "val -> " << val << std::endl; }
-
-d[ val = "*data" ] =
-    _add_prel[ '#include <iostream>' ]
-    { std::cout << val << std::endl; }
-
 get_urls =
     ( '/file ' { coutn << "requesting /file"; } )
 

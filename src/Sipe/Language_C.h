@@ -14,12 +14,12 @@ public:
     virtual void write( std::ostream &os, const State *state, bool write_main = false );
 
 protected:
+    void _write_init_func( std::ostream &os, const char *sp, const char *sn );
+    void _write_dest_func( std::ostream &os, const char *sp, const char *sn );
     void _write_parse_file_func( std::ostream &os );
     void _write_preliminaries( std::ostream &os );
     void _write_declarations( std::ostream &os );
     void _write_parse_func( std::ostream &os );
-    void _write_init_func( std::ostream &os );
-    void _write_dest_func( std::ostream &os );
     void _write_main_func( std::ostream &os );
     void _write_code( std::ostream &os, const State *mark );
 

@@ -33,11 +33,10 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
     while ( use_mark_stack.size() ) {
         State *dst = use_mark_stack.pop();
         State *smk = dst->use_mark;
-        State *src = smk->next[ 0 ].s; // after the set_mark
 
         int os_use_mark_stack = use_mark_stack.size();
         StateCloner sc( to_del, use_mark_stack );
-        State *nst = sc.make( src, dst );
+        State *nst = sc.make( smk, dst );
         if ( nst->has_something_to_execute( dst->has_something_to_execute( false ) ) ) {
             // if no data dependant actions (due to the instructions or the paths)
             Vec<const Instruction *> undep;
