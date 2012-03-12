@@ -100,7 +100,7 @@ int main( int argc, char **argv ) {
     }
 
     Language_C l( true );
-    l.write( *out, state, true );
+    l.write( *out, e.code_parm, state, true );
 
     if ( execute and output.size() ) {
         fout.close();

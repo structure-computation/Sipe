@@ -42,6 +42,10 @@ State *StateCloner::_make_rec( Scp &p, const char *msg ) {
     Vec<const Instruction *> vi;
     int an = -1;
     for( int i = 0; i < p.state->instructions.size(); ++i ) {
+        P( *p.dst->instructions[ 0 ] );
+        for( std::set<const Instruction *>::const_iterator v = p.dst->visited.begin(); v != p.dst->visited.end(); ++v )
+            P( **v );
+
         if ( p.state->instructions[ i ]->can_lead_to( p.dst->instructions[ 0 ], p.dst->visited ) ) {
             if ( p.state->action_num == i )
                 an = vi.size();

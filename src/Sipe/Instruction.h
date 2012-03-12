@@ -16,7 +16,6 @@ class Instruction {
 public:
     typedef enum { OK = 1, KO = 2 } EndType;
 
-    Instruction( const Lexem *lex, double freq, const Func &func );
     Instruction( const Lexem *lex, double freq, const Cond &cond );
     Instruction( const Lexem *lex, double freq, EndType end );
     Instruction( const Lexem *lex, double freq, String code );
@@ -32,7 +31,6 @@ public:
     std::ostream &write_label( std::ostream &os ) const; ///<
     void get_children( Vec<Instruction *> &vec );
     Instruction &operator<<( Instruction *n ); ///< add to next
-    bool immediate_execution() const;
     bool branching_only() const;
     bool is_an_action() const;
     bool needs_data() const; ///< true if data is needed for the action
@@ -46,7 +44,6 @@ public:
     const Lexem *lex;
 
     //
-    Ctr<Func> func;
     Ctr<Cond> cond;
     String code;
     double freq;

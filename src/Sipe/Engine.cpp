@@ -1,7 +1,7 @@
 #include "Engine.h"
 #include "Predef.h"
 
-Engine::Engine() : instruction_maker( lexem_maker ), state_maker( to_del ), lexem_maker( error_list ) {
+Engine::Engine() : instruction_maker( code_parm, lexem_maker ), state_maker( to_del ), lexem_maker( error_list ) {
     sources = 0;
 
     di = false;

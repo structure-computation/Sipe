@@ -1,6 +1,7 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
+#include "CodeParm.h"
 #include "State.h"
 #include <map>
 
@@ -11,15 +12,9 @@ public:
     Language();
     virtual ~Language();
 
-    virtual void write( std::ostream &os, const State *state, bool write_main = false ) = 0;
+    virtual void write( std::ostream &os, const CodeParm &cp, const State *state, bool write_main = false ) = 0;
 
 protected:
-    struct Attr {
-        String decl;
-        String init;
-        String dest;
-    };
-
     struct Block {
         // filled by _unfold
         const State *state;
@@ -48,10 +43,7 @@ protected:
     void   _make_labels( Block *block );
 
     std::map<String,Block *> created;
-    Vec<String> preliminaries;
     Vec<Block *> block_seq; ///< filled by _make_labels (optionnal)
-    Vec<Attr> attributes;
-    String struct_name;
     bool need_a_mark;
     int nb_labels;
     int cur_op_id;

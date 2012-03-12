@@ -25,26 +25,38 @@ end       = { end: inp_cont = &&end; return false; } any** #
 
 # mandatory arg: val (e.g. unsigned_int_reader[ val = 'content_length' ])
 uint[ val ] =
-    _add_attr[ 'unsigned val;' 'sipe_data->val = 0;' ]
+    add_attr[ 'unsigned val;' 'sipe_data->val = 0;' ]
     digit { sipe_data->val = *data - '0'; }
     ( digit { sipe_data->val = 10 * sipe_data->val + ( *data - '0' ); } )**
 
 
 # print a char
 p[ msg ] =
-    _add_prel[ '#include <iostream>' ]
+    add_prel[ '#include <iostream>' ]
     { std::cout << "msg" << std::endl; }
 
-# print "value -> $value"
+# print "val -> $sipe_data->val"
 i[ val ] =
-    #_add_prel[ '#ifdef SIPE_MAIN' ]
-    #_add_prel[ '#include <iostream>' ]
-    #_add_prel[ '#endif // SIPE_MAIN' ]
-    { std::cout << "val -> " << val << std::endl; }
+    #add_prel[ '#ifdef SIPE_MAIN' ]
+    #add_prel[ '#include <iostream>' ]
+    #add_prel[ '#endif // SIPE_MAIN' ]
+    { std::cout << "val -> " << sipe_data->val << std::endl; }
 
 # print a value (by default, print current char)
 d[ val = "*data" ] =
-    _add_prel[ '#ifdef SIPE_MAIN' ]
-    _add_prel[ '#include <iostream>' ]
-    _add_prel[ '#endif // SIPE_MAIN' ]
+    add_prel[ '#ifdef SIPE_MAIN' ]
+    add_prel[ '#include <iostream>' ]
+    add_prel[ '#endif // SIPE_MAIN' ]
     { std::cout << val; }
+
+#
+beg_var[ var_name ] = 
+    add_attr[ 'const char *beg_var_name;' ]
+    add_attr[ 'std::string var_name;' ]
+    { sipe_data->beg_var_name = data; }
+
+#
+end_var[ var_name ] = 
+    { sipe_data->var_name = std::string( sipe_data->beg_var_name, data ); }
+
+

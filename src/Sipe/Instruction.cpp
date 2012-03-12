@@ -22,11 +22,6 @@ Instruction::Instruction( const Lexem *lex, double freq, String code ) {
     this->code = code;
 }
 
-Instruction::Instruction( const Lexem *lex, double freq, const Func &func ) {
-    init( this, lex, freq );
-    this->func = func;
-}
-
 Instruction::Instruction( const Lexem *lex, double freq, const Cond &cond ) {
     init( this, lex, freq );
     this->cond = cond;
@@ -79,7 +74,6 @@ std::ostream &Instruction::write_label( std::ostream &os ) const {
     if ( cond        ) return os << *cond;
     if ( incc        ) return os << "+" << incc;
     if ( code.size() ) return dot_out( os, code, 20 );
-    if ( func        ) return dot_out( os, *func, 20 );
     if ( end         ) return os << ( end == 2 ? "KO" : "OK" );
     return os << ".";
 }
@@ -89,22 +83,13 @@ void Instruction::write_code( StreamSepMaker<std::ostream> &os, Language *l ) co
         os << code;
 }
 
-bool Instruction::immediate_execution() const {
-    if ( not is_an_action() )
-        return false;
-    if ( func and func->name == "_add_attr" ) return true;
-    if ( func and func->name == "_add_prel" ) return true;
-    if ( func and func->name == "_set_strn" ) return true;
-    return false;
-}
-
 bool Instruction::branching_only() const {
-    return not cond and not incc and not code.size() and not func;
+    return not cond and not incc and not code.size();
 }
 
 
 bool Instruction::is_an_action() const {
-    return code.size() or func;
+    return code.size();
 }
 
 static inline bool lower ( char a ) { return a >= 'a' and a <= 'z'; }

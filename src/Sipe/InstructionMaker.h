@@ -4,13 +4,14 @@
 #include "Instruction.h"
 #include "LexemMaker.h"
 #include "FuncParm.h"
+#include "CodeParm.h"
 #include <map>
 
 /**
 */
 class InstructionMaker {
 public:
-    InstructionMaker( LexemMaker &lexem_maker );
+    InstructionMaker( CodeParm &code_parm, LexemMaker &lexem_maker );
     ~InstructionMaker();
 
     Instruction *make( const char *name );
@@ -29,6 +30,7 @@ protected:
     std::map<String,Instruction> labels;
     Vec<Instruction *> to_del;
     LexemMaker &lexem_maker;
+    CodeParm &code_parm;
 };
 
 #endif // INSTRUCTIONMAKER_H

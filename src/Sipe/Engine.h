@@ -4,6 +4,7 @@
 #include "InstructionMaker.h"
 #include "StateMaker.h"
 #include "LexemMaker.h"
+#include "CodeParm.h"
 #include "Source.h"
 #include "Stream.h"
 
@@ -20,6 +21,7 @@ public:
     State *make_state_seq( const Instruction *inst );
     State *make_state_seq( const char *machine );
 
+    CodeParm code_parm;
     bool dl; ///< display lexem graph ?
     bool di; ///< display instruction graph ?
     bool ds; ///< display state graph ?

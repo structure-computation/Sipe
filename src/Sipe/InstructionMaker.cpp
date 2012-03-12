@@ -16,7 +16,7 @@ static String repl_parm( String str, const FuncParm &params ) {
 }
 
 
-InstructionMaker::InstructionMaker( LexemMaker &lexem_maker ) : lexem_maker( lexem_maker ) {
+InstructionMaker::InstructionMaker( CodeParm &code_parm, LexemMaker &lexem_maker ) : lexem_maker( lexem_maker ), code_parm( code_parm ) {
 }
 
 InstructionMaker::~InstructionMaker() {
@@ -67,9 +67,30 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par 
     //
     for( ; lex and not lex->eq( Lexem::OPERATOR, "=" ); lex = lex->next ) {
         if ( lex->type == Lexem::VARIABLE ) {
-            if ( lex->beg[ 0 ] == '_' ) {
-                // -> internal function call
-                src = app( src, new Instruction( lex, par.freq, Func( lex->beg, lex->end, par.params ) ) );
+            if ( lex->eq( "add_attr" ) ) {
+                CodeParm::Attr a;
+                a.decl = 0 < par.params.u_params.size() ? par.params.u_params[ 0 ] : "";
+                a.init = 1 < par.params.u_params.size() ? par.params.u_params[ 1 ] : "";
+                a.dest = 2 < par.params.u_params.size() ? par.params.u_params[ 2 ] : "";
+                for( int i = 0; ; ++i ) {
+                    if ( i == code_parm.attributes.size() ) {
+                        code_parm.attributes << a;
+                        break;
+                    }
+                    if ( code_parm.attributes[ i ].decl == a.decl )
+                        break;
+                }
+            } else if ( lex->eq( "add_prel" ) ) {
+                for( int j = 0; j < par.params.u_params.size(); ++j ) {
+                    String prel = par.params.u_params[ j ];
+                    if ( not code_parm.preliminaries.contains( prel ) )
+                        code_parm.preliminaries << prel;
+                }
+            } else if ( lex->eq( "str_name" ) ) {
+                if ( par.params.u_params.size() == 1 )
+                    code_parm.struct_name = par.params.u_params[ 0 ];
+                else
+                    cerrn << "str_name must have exactly one argument";
             } else if ( const Lexem *nex = lexem_maker( lex->beg, lex->end ) ) {
                 // -> machine call
                 if ( nex->prev and nex->prev->eq( Lexem::OPERATOR, "=" ) and nex->prev->children[ 0 ]->eq( Lexem::OPERATOR, "[" ) ) {

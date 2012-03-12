@@ -50,3 +50,5 @@ src/Sipe/Ltate.h
 src/Sipe/Ltate.cpp
 src/txt_to_cpp.cpp
 src/Sipe/Predef.sipe
+src/Sipe/CodeParm.h
+src/Sipe/CodeParm.cpp

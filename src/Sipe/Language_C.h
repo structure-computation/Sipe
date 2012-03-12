@@ -11,7 +11,7 @@ public:
     Language_C( bool cpp );
     virtual ~Language_C();
 
-    virtual void write( std::ostream &os, const State *state, bool write_main = false );
+    virtual void write( std::ostream &os, const CodeParm &cp, const State *state, bool write_main = false );
 
 protected:
     void _write_init_func( std::ostream &os, const char *sp, const char *sn );
@@ -28,6 +28,7 @@ protected:
         int label;
     };
 
+    const CodeParm *cp;
     Vec<Cnt> cnt;
     String f_suf;
     bool cpp;

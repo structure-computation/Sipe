@@ -177,13 +177,13 @@ State *State::simplified() {
 }
 
 bool State::will_write_something() const {
-    return ( action_num >= 0 and not instructions[ action_num ]->immediate_execution() ) or
-            ( action and not action->immediate_execution() ) or
-            end or
-            set_mark or
-            use_mark or
-            rem_mark or
-            incc;
+    return action_num >= 0 or
+           action or
+           end or
+           set_mark or
+           use_mark or
+           rem_mark or
+           incc;
 }
 
 void State::insert_between_this_and_next( State *nst ) {

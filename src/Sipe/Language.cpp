@@ -2,7 +2,6 @@
 #include "DotOut.h"
 
 Language::Language() {
-    struct_name = "SipeData";
     need_a_mark = false;
     nb_labels   = 0;
     cur_op_id   = 1;
@@ -17,35 +16,6 @@ void Language::_internal_state_read( const State *state ) {
     if ( state->set_mark )
         need_a_mark = true;
 
-    if ( state->action ) {
-        if ( state->action->func ) {
-            if ( state->action->func->name == "_add_attr" ) {
-                Attr a;
-                a.decl = 0 < state->action->func->parm.u_params.size() ? state->action->func->parm.u_params[ 0 ] : "";
-                a.init = 1 < state->action->func->parm.u_params.size() ? state->action->func->parm.u_params[ 1 ] : "";
-                a.dest = 2 < state->action->func->parm.u_params.size() ? state->action->func->parm.u_params[ 2 ] : "";
-                for( int i = 0; ; ++i ) {
-                    if ( i == attributes.size() ) {
-                        attributes << a;
-                        break;
-                    }
-                    if ( attributes[ i ].decl == a.decl )
-                        break;
-                }
-            } else if ( state->action->func->name == "_add_prel" ) {
-                for( int j = 0; j < state->action->func->parm.u_params.size(); ++j ) {
-                    String prel = state->action->func->parm.u_params[ j ];
-                    if ( not preliminaries.contains( prel ) )
-                        preliminaries << prel;
-                }
-            } else if ( state->action->func->name == "_str_name" ) {
-                if ( state->action->func->parm.u_params.size() == 1 )
-                    struct_name = state->action->func->parm.u_params[ 0 ];
-                else
-                    cerrn << "_str_name must have exactly one argument";
-            }
-        }
-    }
 }
 
 Language::Block *Language::_unfold( const State *state, const State *mark, int num_next, const Cond &not_in ) {
