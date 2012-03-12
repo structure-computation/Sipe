@@ -33,7 +33,7 @@ main =
     post [freq= 6] |
     e400
 
-amain =
+main =
     ( 'A' |
       ( 'B' -> pouet )  |
       'C'

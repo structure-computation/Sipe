@@ -32,15 +32,17 @@ uint[ val ] =
 
 # print a char
 p[ msg ] =
+    add_prel[ '#ifdef SIPE_MAIN' ]
     add_prel[ '#include <iostream>' ]
+    add_prel[ '#endif // SIPE_MAIN' ]
     { std::cout << "msg" << std::endl; }
 
 # print "val -> $sipe_data->val"
-i[ val ] =
-    #add_prel[ '#ifdef SIPE_MAIN' ]
-    #add_prel[ '#include <iostream>' ]
-    #add_prel[ '#endif // SIPE_MAIN' ]
-    { std::cout << "val -> " << sipe_data->val << std::endl; }
+i[ val = "*data" ] =
+    add_prel[ '#ifdef SIPE_MAIN' ]
+    add_prel[ '#include <iostream>' ]
+    add_prel[ '#endif // SIPE_MAIN' ]
+    { std::cout << "val -> " << val << std::endl; }
 
 # print a value (by default, print current char)
 d[ val = "*data" ] =

@@ -30,8 +30,8 @@ src/Sipe/Source.h
 src/Sipe/Stream.h
 src/Sipe/StreamSep.h
 src/Sipe/Vec.h
-tests/http.sipe.py
-tests/test.sipe.py
+tests/http.sipe
+tests/test.sipe
 Makefile
 src/Sipe/Func.h
 src/Sipe/Func.cpp
