@@ -2,7 +2,7 @@
 #include "Smp.h"
 
 Smp::Smp() {
-    leads_to_ends = false;
+    action_next_round = 0;
     display_steps = false;
     allow_incc = true;
     has_a_mark = 0;
@@ -13,14 +13,14 @@ String Smp::bid() const {
     for( int i = 0; i < ok.size(); ++i )
         os << ( i ? " I" : "I" ) << ok[ i ];
 
-    for( int i = 0; i < paction.size(); ++i )
-        os << " P" << paction[ i ];
-
     for( int i = 0; i < pending.size(); ++i )
         os << " [pending=" << pending[ i ] << "]";
 
     if ( has_a_mark )
         os << " [has_a_mark]";
+
+    if ( action_next_round )
+        os << " [action_next_round=" << action_next_round << "]";
 
     if ( cond ) {
         Vec<const Instruction *> nc;

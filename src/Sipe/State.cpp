@@ -261,8 +261,8 @@ bool State::_is_interesting( bool take_incc_into_account, bool take_nb_next_into
     return  ( next.size() != 1 and take_nb_next_into_account ) or
             ( incc and take_incc_into_account ) or
             action or
-            ( set_mark /*and used_marks.any()*/ ) or
-            ( rem_mark /*and rem_mark->used_marks.any()*/ ) or
+            ( set_mark and used_marks.any() ) or
+            ( rem_mark and rem_mark->used_marks.any() ) or
             use_mark;
 }
 

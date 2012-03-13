@@ -17,8 +17,8 @@ protected:
     State *_new_State( const Smp &p );
 
     State *_same_bid( Smp &p );
+    State *_action_r( Smp &p );
     State *_rm_twice( Smp &p );
-    // State *_use_pact( Smp &p );
     State *_use_pend( Smp &p );
     State *_only_end( Smp &p );
     State *_prior_br( Smp &p );

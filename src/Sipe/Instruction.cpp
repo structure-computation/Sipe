@@ -40,6 +40,12 @@ Instruction::Instruction( const Lexem *lex, double freq ) {
 Instruction::~Instruction() {
 }
 
+bool Instruction::can_lead_to( const Vec<const Instruction *> &dst, const std::set<const Instruction *> &allowed ) const {
+    for( int i = 0; i < dst.size(); ++i )
+        if ( can_lead_to( dst[ i ], allowed ) )
+            return true;
+    return false;
+}
 
 bool Instruction::can_lead_to( const Instruction *dst, const std::set<const Instruction *> &allowed ) const {
     ++cur_op_id;

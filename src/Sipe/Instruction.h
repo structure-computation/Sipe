@@ -23,6 +23,7 @@ public:
     Instruction( const Lexem *lex, double freq );
     virtual ~Instruction();
 
+    bool can_lead_to( const Vec<const Instruction *> &dst, const std::set<const Instruction *> &allowed ) const;
     bool can_lead_to( const Instruction *dst, const std::set<const Instruction *> &allowed ) const;
     bool get_next_conds( Vec<const Instruction *> &conds, int nb_incc_allowed ) const; ///< return true if all the branches have an accessible cond
     int display_dot( const char *f = ".inst.dot", const char *prg = "okular" ) const;

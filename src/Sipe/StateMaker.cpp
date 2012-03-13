@@ -39,11 +39,11 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
     // already created ?
     if ( State *res = _same_bid( p ) ) return res;
 
+    // action next round ?
+    if ( State *res = _action_r( p ) ) return res;
+
     // the same inst appears twice ?
     if ( State *res = _rm_twice( p ) ) return res;
-
-    // we have pending code / func wo data and we know that all the branches will go to the end
-    // if ( State *res = _use_pact( p ) ) return res;
 
     // we have pending code / func and we know that all the branches will go to the end...
     // or the number of possible instructions for pending are now = 1
@@ -98,6 +98,18 @@ State *StateMaker::_same_bid( Smp &p ) {
     return 0;
 }
 
+State *StateMaker::_action_r( Smp &p ) {
+    if ( p.action_next_round ) {
+        State *res = _new_State( p );
+        res->action = p.action_next_round;
+        p.action_next_round = 0;
+        res->add_next( _make_rec( p, "action r" ) );
+        return res;
+    }
+
+    return 0;
+}
+
 State *StateMaker::_rm_twice( Smp &p ) {
     for( int i = 1; i < p.ok.size(); ++i ) {
         for( int j = 0; j < i; ++j ) {
@@ -111,34 +123,48 @@ State *StateMaker::_rm_twice( Smp &p ) {
     return 0;
 }
 
-//State *StateMaker::_use_pact( Smp &p ) {
-//    if ( p.paction.size() and p.ok.size() == 1 ) {
-//        if ( p.paction[ 0 ]->can_lead_to( p.ok[ 0 ], p.visited ) ) {
-//            State *res = _new_State( p );
-//            res->action = p.paction[ 0 ];
-//            p.paction.remove( 0 );
-//            res->add_next( _make_rec( p, "use_pact" ) );
-//            return res;
-//        }
-//        p.paction.remove( 0 );
-//        return _make_rec( p, "rem_pact" );
-//    }
-
-//    return 0;
-//}
-
 State *StateMaker::_use_pend( Smp &p ) {
-    // we now we can say that it leads to the end,
-    if ( p.leads_to_ends == false and p.ok.size() == 1 and p.pending.size() ) {
-        State *res = _new_State( p );
-        p.pending[ 0 ].leads_to_ends = true;
-        res->use_mark = p.pending[ 0 ].has_a_mark;
-        res->add_next( _make_rec( p.pending[ 0 ], "use mark" ) );
-        return res;
+    for( int i = 0; i < p.pending.size(); ++i ) {
+        Smp &pe = p.pending[ i ];
+        for( int j = 0; j < pe.ok.size(); ++j )
+            if ( not pe.ok[ j ]->can_lead_to( p.ok, p.visited ) )
+                pe.remove_branch( j-- );
+
+        int nb_actions = 0;
+        for( int j = 0; j < pe.ok.size(); ++j )
+            nb_actions += pe.ok[ j ]->is_an_action();
+        coutn << nb_actions << " " << pe.ok.size();
+
+        // no more action in pe
+        if ( nb_actions == 0 ) {
+            pe.has_a_mark->used_marks << false;
+
+            State *res = _new_State( p );
+            res->rem_mark = pe.has_a_mark;
+            p.pending.remove( i );
+            res->add_next( _make_rec( p, "rem mark" ) );
+            return res;
+
+        }
+
+        // only one instruction
+        if ( pe.ok.size() == 1 and i == 0 ) {
+            // if action is no data dependant, execute it now
+            if ( true ) {
+                pe.has_a_mark->used_marks << false;
+
+                State *res = _new_State( p );
+                res->rem_mark = pe.has_a_mark;
+
+                p.action_next_round = pe.ok[ 0 ];
+                p.pending.remove( i );
+                res->add_next( _make_rec( p, "act wod" ) );
+                return res;
+            }
+        }
     }
 
-//    for( int i = 0; i < p.pending.size(); ++i ) {
-//    }
+
 
 //    if ( p.pending ) {
 //        bool use = true;
@@ -338,6 +364,8 @@ State *StateMaker::_jmp_code( Smp &p ) {
             State *res = _new_State( p );
             if ( p.ok.size() == 1 )
                 res->action = p.ok[ i ];
+            else
+                p.pending << p;
             p.next( i );
 
             res->add_next( _make_rec( p, "jmp_code" ) );
