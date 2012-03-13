@@ -86,8 +86,9 @@ void Language_C::_write_declarations( std::ostream &os ) {
         on << "";
     }
     on << "    void *_inp_cont;";
-    if ( need_a_mark )
-        on << "    const char *_mark;";
+    P ( nb_marks );
+    if ( nb_marks )
+        on << "    const char *_mark[ " << nb_marks << " ];";
     for( int i = 0; i < cp->attributes.size(); ++i )
         on << "    " << cp->attributes[ i ].decl;
     on << "};";
@@ -98,8 +99,8 @@ void Language_C::_write_init_func( std::ostream &os, const char *sp, const char 
     on.beg = sp;
 
     on << sn << "_inp_cont = 0;";
-    if ( need_a_mark )
-        on << sn << "_mark = 0;";
+    //if ( need_a_mark )
+    //    on << sn << "_mark = 0;";
 
     for( int i = 0, a = 0; i < cp->attributes.size(); ++i ) {
         if ( cp->attributes[ i ].init.size() ) {
@@ -170,13 +171,13 @@ void Language_C::_write_parse_func( std::ostream &os ) {
 
             //
             if ( b->state->set_mark ) {
-                on << "sipe_data->_mark = data;";
+                on << "sipe_data->_mark[ " << marks[ b->state ] << " ] = data;";
                 //on << "    std::cout << \"set mark\" << std::endl;";
             }
 
             //
             if ( b->state->use_mark ) {
-                on << "data = sipe_data->_mark;";
+                on << "data = sipe_data->_mark[ " << marks[ b->state->use_mark ] << " ];";
                 //on << "    std::cout << \"use mark\" << std::endl;";
             }
 

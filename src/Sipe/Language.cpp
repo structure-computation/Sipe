@@ -2,7 +2,7 @@
 #include "DotOut.h"
 
 Language::Language() {
-    need_a_mark = false;
+    nb_marks    = 0;
     nb_labels   = 0;
     cur_op_id   = 1;
 }
@@ -13,9 +13,6 @@ Language::~Language() {
 }
 
 void Language::_internal_state_read( const State *state ) {
-    if ( state->set_mark )
-        need_a_mark = true;
-
 }
 
 Language::Block *Language::_unfold( const State *state, const State *mark, int num_next, const Cond &not_in ) {
@@ -41,9 +38,9 @@ Language::Block *Language::_unfold( const State *state, const State *mark, int n
 
     res->op_id = 0;
     res->label = -1;
-    res->t_ok = false;
-    res->write_goto = 0;
     res->write = true;
+    res->t_ok  = false;
+    res->write_goto = 0;
     res->not_in = not_in;
     if ( num_next < 0 ) {
         res->state = state;
@@ -133,8 +130,41 @@ void Language::_make_labels( Block *block ) {
     //
     for( int i = os; i < block_seq.size(); ++i )
         _simplify_label( block_seq[ i ], -1 );
+
+    //
+    for( int i = 0; i < block_seq.size(); ++i )
+        if ( block_seq[ i ]->state and block_seq[ i ]->state->set_mark )
+            _get_mark( block_seq[ i ] );
 }
 
+void Language::_get_used_marks_rec( std::set<int> &used_marks, Block *block, const State *set_mark ) {
+    if ( block == 0 or block->op_id == cur_op_id )
+        return;
+    block->op_id = cur_op_id;
+
+    used_marks.insert( block->used_marks.begin(), block->used_marks.end() );
+
+    if ( block->state and ( block->state->rem_mark == set_mark or block->state->use_mark == set_mark ) )
+        return;
+
+    _get_used_marks_rec( used_marks, block->ok, set_mark );
+    _get_used_marks_rec( used_marks, block->ko, set_mark );
+}
+
+void Language::_get_mark( Block *b ) {
+    ++cur_op_id;
+    std::set<int> used_marks;
+    _get_used_marks_rec( used_marks, b, b->state );
+
+    for( int i = 0; ; ++i ) {
+        if ( used_marks.count( i ) == 0 ) {
+            if ( nb_marks <= i )
+                nb_marks = i + 1;
+            marks[ b->state ] = i;
+            break;
+        }
+    }
+}
 
 void Language::_write_dot_rec( std::ostream &os, Block *block ) {
     if ( block->op_id == cur_op_id )

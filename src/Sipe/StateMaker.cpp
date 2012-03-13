@@ -181,8 +181,6 @@ State *StateMaker::_use_pend( Smp &p ) {
         //
         for( int j = 0; j < pe.ok.size(); ++j ) {
             if ( not pe.ok[ j ]->can_lead_to( p.ok, p.visited ) ) {
-                P( *pe.ok[ j ] );
-                P( p.ok );
                 pe.remove_branch( j );
                 return _make_rec( p, "rem pend" );
             }
