@@ -1,4 +1,4 @@
 # main = '"' { beg = data + 1; } any** { std::cout.write( beg, data - beg ); coutn << "<-"; } '"' #
 # any ** { P( "E" ); } '"'
 # main = ( { P( "A" ); } 'A' ) | ( { P( "B" ); } 'B' )
-main = 'A' i 'B'
+main = 'A' i ( 'B' i )**

@@ -77,8 +77,8 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
     // else, go next
     if ( State *res = _use_next( p ) ) return res;
 
-    P( "nase" );
-    return new State();
+    // P( "nase" );
+    return 0; // new State();
 }
 
 State *StateMaker::_new_State( const Smp &p ) {
@@ -148,7 +148,6 @@ State *StateMaker::_use_pend( Smp &p ) {
         int nb_actions = 0;
         for( int j = 0; j < pe.ok.size(); ++j )
             nb_actions += pe.ok[ j ]->is_an_action();
-        coutn << nb_actions << " " << pe.ok.size();
 
         // no more action in pe
         if ( nb_actions == 0 ) {
