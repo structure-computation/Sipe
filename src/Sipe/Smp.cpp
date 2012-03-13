@@ -6,7 +6,7 @@ Smp::Smp() {
     action_next_round = 0;
     display_steps = false;
     allow_incc = true;
-    has_a_mark = 0;
+    mark = 0;
 }
 
 String Smp::bid() const {
@@ -17,8 +17,8 @@ String Smp::bid() const {
     for( int i = 0; i < pending.size(); ++i )
         os << " [pending=" << pending[ i ] << "]";
 
-    if ( has_a_mark )
-        os << " [has_a_mark]";
+    if ( mark )
+        os << " [mark]";
 
     if ( use_mark_from_pending )
         os << " [use_mark_from_pending]";
@@ -75,8 +75,8 @@ std::ostream &operator<<( std::ostream &os, const Smp &p ) {
     if ( not p.allow_incc )
         os << " [no incc]";
     for( int i = 0; i < p.pending.size(); ++i )
-        os << " [pending=" << p.pending[ i ] << "]";
-    if ( p.has_a_mark )
-        os << " [has_a_mark]";
+        os << " [pending=" << p.pending[ i ].ok << "]";
+    if ( p.mark )
+        os << " [mark]";
     return os; // << " " << p.bid();
 }

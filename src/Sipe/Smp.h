@@ -22,7 +22,7 @@ public:
     Vec<const Instruction *> ok;
     bool use_mark_from_pending;
     String display_prefix;
-    State *has_a_mark;
+    State *mark;
 
     bool display_steps;
     Vec<Smp> pending;

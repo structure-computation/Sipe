@@ -28,6 +28,7 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
     p.display_steps = ws;
     State *res = _make_rec( p, "init" );
 
+    //return res;
     return res->simplified();
 }
 
@@ -116,8 +117,8 @@ State *StateMaker::_action_r( Smp &p ) {
 State *StateMaker::_u_mark_p( Smp &p ) {
     if ( p.use_mark_from_pending ) {
         State *res = _new_State( p );
-        // p.pending[ 0 ].dst << p;
         p.use_mark_from_pending = 0;
+        p.pending[ 0 ].display_prefix = p.display_prefix;
         res->add_next( _make_rec( p.pending[ 0 ], "u mark p" ) );
         return res;
     }
@@ -141,50 +142,49 @@ State *StateMaker::_rm_twice( Smp &p ) {
 State *StateMaker::_use_pend( Smp &p ) {
     for( int i = 0; i < p.pending.size(); ++i ) {
         Smp &pe = p.pending[ i ];
-        for( int j = 0; j < pe.ok.size(); ++j )
-            if ( not pe.ok[ j ]->can_lead_to( p.ok, p.visited ) )
-                pe.remove_branch( j-- );
 
+        // if no action -> rem pending and rem mark
         int nb_actions = 0;
         for( int j = 0; j < pe.ok.size(); ++j )
             nb_actions += pe.ok[ j ]->is_an_action();
 
-        // no more action in pe
         if ( nb_actions == 0 ) {
-            pe.has_a_mark->used_marks << false;
-
             State *res = _new_State( p );
-            res->rem_mark = pe.has_a_mark;
+            res->rem_mark = pe.mark;
             p.pending.remove( i );
             res->add_next( _make_rec( p, "rem mark" ) );
             return res;
-
         }
 
-        // only one instruction
-        if ( pe.ok.size() == 1 and i == 0 ) {
+        // if the remaining ok is an action and we're in the first pending
+        if ( i == 0 and pe.ok.size() == 1 ) {
+            State *res = _new_State( p );
+
+            // if the first pending contains only one instruction
             if ( pe.ok[ 0 ]->needs_data() ) {
                 // if needs data we have to use the mark
-                pe.has_a_mark->used_marks << true;
-
-                State *res = _new_State( p );
-                res->use_mark = pe.has_a_mark;
-
+                pe.mark->used_marks = true;
+                res->use_mark = pe.mark;
                 p.use_mark_from_pending = true;
                 res->add_next( _make_rec( p, "use_pend" ) );
                 return res;
-
             } else {
-                // if action is no data dependant, execute it now
-                pe.has_a_mark->used_marks << false;
-
-                State *res = _new_State( p );
-                res->rem_mark = pe.has_a_mark;
-
+                // else, execute without using the mark
+                res->rem_mark = pe.mark;
                 p.action_next_round = pe.ok[ 0 ];
-                p.pending.remove( i );
-                res->add_next( _make_rec( p, "act wod" ) );
+                p.pending.remove( 0 );
+                res->add_next( _make_rec( p, "rok pend" ) );
                 return res;
+            }
+        }
+
+        //
+        for( int j = 0; j < pe.ok.size(); ++j ) {
+            if ( not pe.ok[ j ]->can_lead_to( p.ok, p.visited ) ) {
+                P( *pe.ok[ j ] );
+                P( p.ok );
+                pe.remove_branch( j );
+                return _make_rec( p, "rem pend" );
             }
         }
     }
@@ -342,10 +342,10 @@ State *StateMaker::_jmp_code( Smp &p ) {
             //            }
 
             // if we are not sure that this action will be executed, add a mark
-            if ( p.ok.size() > 1 and not p.has_a_mark ) {
+            if ( p.ok.size() > 1 and not p.mark ) {
                 State *res = _new_State( p );
                 res->set_mark = true;
-                p.has_a_mark = res;
+                p.mark = res;
                 res->add_next( _make_rec( p, "mk pend" ) );
                 return res;
             }
@@ -357,6 +357,7 @@ State *StateMaker::_jmp_code( Smp &p ) {
             else
                 p.pending << p;
             p.next( i );
+            p.mark = 0;
 
             res->add_next( _make_rec( p, "jmp_code" ) );
             return res;
@@ -390,7 +391,6 @@ State *StateMaker::_jmp_incc( Smp &p ) {
             if ( p.ok[ i ]->next.size() )
                 i += p.next( i ) - 1;
         p.cond.clear();
-        p.has_a_mark = 0;
 
         s->add_next( _make_rec( p, "jmp_incc" ) );
         s->incc = 1;

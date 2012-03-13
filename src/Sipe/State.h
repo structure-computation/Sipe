@@ -33,8 +33,8 @@ public:
     // Vec<const Instruction *> instructions;
     // std::set<const Instruction *> visited;
     const Instruction *action; ///<
-    Vec<bool> used_marks; ///< if set_mark
     Vec<State *> prev;
+    bool used_marks; ///< if set_mark is useful
     bool   set_mark;
     State *use_mark;
     State *rem_mark;

@@ -57,6 +57,7 @@ beg_var[ var_name ] =
     add_attr[ 'std::string var_name;' ]
     { sipe_data->beg_var_name = data; }
 
+
 #
 end_var[ var_name ] = 
     { sipe_data->var_name = std::string( sipe_data->beg_var_name, data ); }
