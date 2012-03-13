@@ -42,6 +42,9 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
     // action next round ?
     if ( State *res = _action_r( p ) ) return res;
 
+    // use mark from pending ?
+    if ( State *res = _u_mark_p( p ) ) return res;
+
     // the same inst appears twice ?
     if ( State *res = _rm_twice( p ) ) return res;
 
@@ -110,6 +113,18 @@ State *StateMaker::_action_r( Smp &p ) {
     return 0;
 }
 
+State *StateMaker::_u_mark_p( Smp &p ) {
+    if ( p.use_mark_from_pending ) {
+        State *res = _new_State( p );
+        // p.pending[ 0 ].dst << p;
+        p.use_mark_from_pending = 0;
+        res->add_next( _make_rec( p.pending[ 0 ], "u mark p" ) );
+        return res;
+    }
+
+    return 0;
+}
+
 State *StateMaker::_rm_twice( Smp &p ) {
     for( int i = 1; i < p.ok.size(); ++i ) {
         for( int j = 0; j < i; ++j ) {
@@ -149,8 +164,19 @@ State *StateMaker::_use_pend( Smp &p ) {
 
         // only one instruction
         if ( pe.ok.size() == 1 and i == 0 ) {
-            // if action is no data dependant, execute it now
-            if ( true ) {
+            if ( pe.ok[ 0 ]->needs_data() ) {
+                // if needs data we have to use the mark
+                pe.has_a_mark->used_marks << true;
+
+                State *res = _new_State( p );
+                res->use_mark = pe.has_a_mark;
+
+                p.use_mark_from_pending = true;
+                res->add_next( _make_rec( p, "use_pend" ) );
+                return res;
+
+            } else {
+                // if action is no data dependant, execute it now
                 pe.has_a_mark->used_marks << false;
 
                 State *res = _new_State( p );
@@ -163,41 +189,6 @@ State *StateMaker::_use_pend( Smp &p ) {
             }
         }
     }
-
-
-
-//    if ( p.pending ) {
-//        bool use = true;
-
-//        // if no surely leads to the end, test if all pending state have nb possible inst = 1
-//        if ( p.ok.size() != 1 ) {
-//            if ( p.pending.size() ) {
-//                for( int i = 0; i < p.pending.size(); ++i ) {
-//                    int nb_possible = 0;
-//                    for( int j = 0; j < p.pending[ i ]->ok.size(); ++j ) {
-//                        bool loc = false;
-//                        for( int k = 0; k < p.ok.size() and loc == false; ++k )
-//                            loc |= p.pending[ i ]->ok[ j ]->can_lead_to( p.ok[ k ], p.visited );
-//                        nb_possible += loc;
-//                    }
-//                    use &= nb_possible == 1;
-//                }
-//            } else
-//                use = false;
-//        }
-
-//        //
-//        if ( use ) {
-//            State *res = _new_State( p );
-//            p.pending.resize( 0 );
-//            res->use_mark = p.pending;
-//            // use_mark_stack << res;
-//            p.pending = 0;
-//            res->add_next( _make_rec( p, "use_pend" ) );
-//            return res;
-//        }
-//    }
-
 
     return 0;
 }

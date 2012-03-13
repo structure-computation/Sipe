@@ -2,6 +2,7 @@
 #include "Smp.h"
 
 Smp::Smp() {
+    use_mark_from_pending = false;
     action_next_round = 0;
     display_steps = false;
     allow_incc = true;
@@ -18,6 +19,9 @@ String Smp::bid() const {
 
     if ( has_a_mark )
         os << " [has_a_mark]";
+
+    if ( use_mark_from_pending )
+        os << " [use_mark_from_pending]";
 
     if ( action_next_round )
         os << " [action_next_round=" << action_next_round << "]";

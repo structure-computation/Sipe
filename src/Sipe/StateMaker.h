@@ -18,6 +18,7 @@ protected:
 
     State *_same_bid( Smp &p );
     State *_action_r( Smp &p );
+    State *_u_mark_p( Smp &p );
     State *_rm_twice( Smp &p );
     State *_use_pend( Smp &p );
     State *_only_end( Smp &p );

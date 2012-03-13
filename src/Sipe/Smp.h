@@ -20,6 +20,7 @@ public:
     std::set<const Instruction *> visited;
     const Instruction *action_next_round;
     Vec<const Instruction *> ok;
+    bool use_mark_from_pending;
     String display_prefix;
     State *has_a_mark;
 
