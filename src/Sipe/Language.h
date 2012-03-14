@@ -36,6 +36,7 @@ protected:
     Block *_unfold( const State *state, const State *mark = 0, int num_next = -1, const Cond &not_in = Cond() );
     void   _get_used_marks_rec( std::set<int> &used_marks, Block *b, const State *set_mark );
     String _bid( const State *state, int num_next, const Cond &not_in ) const;
+    void   _set_used_marks_rec( int mark, Block *b, const State *set_mark );
     int    _simplify_label( Block *block, int take_label_if_not_present );
     void   _write_dot_rec( std::ostream &os, Block *block );
     int    _display_dot( Block *block, const char *f = ".block.dot" );

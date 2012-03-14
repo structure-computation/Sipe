@@ -151,6 +151,20 @@ void Language::_get_used_marks_rec( std::set<int> &used_marks, Block *block, con
     _get_used_marks_rec( used_marks, block->ko, set_mark );
 }
 
+void Language::_set_used_marks_rec( int mark, Block *block, const State *set_mark ) {
+    if ( block == 0 or block->op_id == cur_op_id )
+        return;
+    block->op_id = cur_op_id;
+
+    block->used_marks.insert( mark );
+
+    if ( block->state and ( block->state->rem_mark == set_mark or block->state->use_mark == set_mark ) )
+        return;
+
+    _set_used_marks_rec( mark, block->ok, set_mark );
+    _set_used_marks_rec( mark, block->ko, set_mark );
+}
+
 void Language::_get_mark( Block *b ) {
     ++cur_op_id;
     std::set<int> used_marks;
@@ -164,6 +178,9 @@ void Language::_get_mark( Block *b ) {
             break;
         }
     }
+
+    ++cur_op_id;
+    _set_used_marks_rec( marks[ b->state ], b, b->state );
 }
 
 void Language::_write_dot_rec( std::ostream &os, Block *block ) {

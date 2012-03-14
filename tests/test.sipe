@@ -4,4 +4,10 @@
 
 cp = '/' beg_var[ cpp_flag ] any* 'E' end_var[ cpp_flag ] i[ 'sipe_data->cpp_flag' ]
 
-main = cp
+main = 
+    beg_var[ cpp_flag ] 
+    "'" 
+    any*
+    "'"
+    end_var[ cpp_flag ]
+    i[ 'sipe_data->cpp_flag' ]
