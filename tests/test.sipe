@@ -4,10 +4,23 @@
 
 cp = '/' beg_var[ cpp_flag ] any* 'E' end_var[ cpp_flag ] i[ 'sipe_data->cpp_flag' ]
 
-main = 
-    beg_var[ cpp_flag ] 
+c_str = 
     "'" 
-    any*
-    "'"
+    beg_var[ cpp_flag ] 
+
+    (
+        "\\" |
+        "\'" |
+        ( "'" -> e ) |
+        any
+    )**
+
+    <- e
     end_var[ cpp_flag ]
     i[ 'sipe_data->cpp_flag' ]
+
+main =
+    (
+        ( 'toto ' uint[val] d[val] p ) |
+        any
+    )**

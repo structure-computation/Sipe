@@ -31,7 +31,7 @@ uint[ val ] =
 
 
 # print a char
-p[ msg ] =
+p[ msg = '' ] =
     add_prel[ '#ifdef SIPE_MAIN' ]
     add_prel[ '#include <iostream>' ]
     add_prel[ '#endif // SIPE_MAIN' ]
@@ -49,7 +49,7 @@ d[ val = "*data" ] =
     add_prel[ '#ifdef SIPE_MAIN' ]
     add_prel[ '#include <iostream>' ]
     add_prel[ '#endif // SIPE_MAIN' ]
-    { std::cout << val; }
+    { std::cout << sipe_data->val; }
 
 #
 beg_var[ var_name ] = 
@@ -60,6 +60,6 @@ beg_var[ var_name ] =
 
 #
 end_var[ var_name ] = 
-    { sipe_data->var_name = std::string( sipe_data->beg_var_name, data ); }
+    { sipe_data->var_name = std::string( sipe_data->beg_var_name, data + 1 ); }
 
 

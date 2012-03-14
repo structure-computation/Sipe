@@ -6,11 +6,11 @@ Cond Cond::full( 0, Cond::p_size );
 
 // display of a char
 static std::ostream &cc( std::ostream &os, int r ) {
+    if ( r == '\\' )
+        return os << "'\\\\'";
     if ( r >= 0x20 and r <= 0x7e and r != 39 )
-        os << "'" << char( r ) << "'";
-    else
-        os << r;
-    return os;
+        return os << "'" << char( r ) << "'";
+    return os << r;
 }
 
 // display of a char

@@ -5,6 +5,9 @@
 
 static String repl_parm( String str, const FuncParm &params ) {
     for( int i = 0; i < params.n_params.size(); ++i ) {
+        if ( params.n_params[ i ].first == params.n_params[ i ].second )
+            continue;
+
         while ( true ) {
             int p = str.find( params.n_params[ i ].first );
             if ( p < 0 )
