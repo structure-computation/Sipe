@@ -42,7 +42,7 @@ i[ val = "*data" ] =
     add_prel[ '#ifdef SIPE_MAIN' ]
     add_prel[ '#include <iostream>' ]
     add_prel[ '#endif // SIPE_MAIN' ]
-    { std::cout << "val -> " << val << std::endl; }
+    { std::cout << "val -> " << sipe_data->val << std::endl; }
 
 # print a value (by default, print current char)
 d[ val = "*data" ] =
