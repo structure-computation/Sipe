@@ -24,3 +24,9 @@ main =
         ( 'toto ' uint[val] d[val] p ) |
         any
     )**
+
+flag = {C} '/-' # cpp_flag #|
+
+main = 'B' ( flag | any )**
+
+
