@@ -4,6 +4,16 @@
 #include <algorithm>
 #include <assert.h>
 
+//
+struct SortNext {
+    bool operator()( const State::Next &a, const State::Next &b ) const {
+        if ( a.freq == b.freq )
+            return a.cond.nz() < b.cond.nz();
+        return a.freq > b.freq;
+    }
+};
+
+
 int State::cur_op_id = 0;
 
 State::State() {
@@ -23,6 +33,12 @@ void State::add_next( const Next &n ) {
         next << n;
         n.s->prev << this;
     }
+}
+
+bool State::eq( const State *s ) const {
+    if ( action and s->action == action and s->next == next )
+        return true;
+    return false;
 }
 
 void State::add_next( State *s ) {
@@ -95,12 +111,6 @@ bool State::eq_op_id() const {
     return op_id == cur_op_id;
 }
 
-struct SortNext {
-    bool operator()( const State::Next &a, const State::Next &b ) const {
-        return a.freq > b.freq;
-    }
-};
-
 
 State *State::simplified() {
     Vec<State *> ch;
@@ -148,6 +158,12 @@ State *State::simplified() {
         if ( not cnt )
             break;
     }
+
+    // look for != block with the same instructions... this loop is O(n^2) (because prev is lazily not done) !
+    for( int i = 0; i < ch.size(); ++i )
+        for( int j = 0; j < i; ++j )
+            if ( ch[ j ]->eq( ch[ i ] ) )
+                ch[ i ]->op_mp = ch[ j ];
 
 
     // output
@@ -278,7 +294,7 @@ void State::_write_dot_rec( std::ostream &os ) const {
 
     for( int i = 0; i < next.size(); ++i ) {
         os << "  node_" << this << " -> node_" << next[ i ].s;
-        if ( i and not next[ i ].cond.always_checked() )
+        if ( i + 1 < next.size() and not next[ i ].cond.always_checked() )
             os << " [label=\"" << next[ i ].cond << "\"]";
         //  << "," << next[ i ].freq
         else if ( next.size() >= 2 )

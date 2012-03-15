@@ -115,8 +115,6 @@ void Language_C::_write_dest_func( std::ostream &os, const char *sp, const char 
     StreamSepMaker<std::ostream> on( os );
     on.beg = sp;
 
-    if ( cp->attributes.size() and cpp )
-        on << cp->struct_name << " *sipe_data = this;";
     for( int i = 0, a = 0; i < cp->attributes.size(); ++i ) {
         if ( cp->attributes[ i ].dest.size() ) {
             if ( cpp and not a++ )
@@ -140,9 +138,10 @@ void Language_C::_write_parse_func( std::ostream &os ) {
 
     // parse
     os << "int parse" << f_suf << "( " << cp->struct_name << " *sipe_data, const char *data, const char *end ) {\n";
-    on << "#define INCR( N ) if ( ++data >= end ) goto p_##N; c_##N:";
     on << "if ( sipe_data->_inp_cont )";
     on << "    goto *sipe_data->_inp_cont;";
+    on << "";
+    on << "#define INCR( N ) if ( ++data >= end ) goto p_##N; c_##N:";
     on << "";
 
     // blocks

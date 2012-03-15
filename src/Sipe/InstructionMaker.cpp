@@ -32,7 +32,7 @@ Instruction *InstructionMaker::make( const char *name ) {
 
     // graph from $name
     Par par; par.freq = 1;
-    Instruction *res = new Instruction( 0, 0 );
+    Instruction *res = new Instruction( 0, 1 );
     Instruction *end = app( res, &main, par );
 
     // ok end
@@ -63,8 +63,9 @@ void InstructionMaker::_get_labels_rec( std::map<String,Instruction *> &labels, 
 
 Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par ) {
     String f = par.params[ "freq" ];
-    if ( f.size() )
+    if ( f.size() ) {
         par.freq = atof( f.c_str() );
+    }
     par.params.remove( "freq" );
 
     //

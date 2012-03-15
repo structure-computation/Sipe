@@ -18,6 +18,7 @@ struct SortVecInst {
 };
 
 
+
 StateMaker::StateMaker( Vec<State *> &to_del ) : to_del( to_del ) {
 }
 
@@ -240,7 +241,7 @@ State *StateMaker::_has_cond( Smp &p ) {
             State *res = _new_State( p );
             res->next.reserve( m.size() );
             for( TM::iterator iter = m.begin(); iter != m.end(); ++iter ) {
-                double freq = 0;
+                double freq = iter->first.size() == 0;
                 for( int i = 0; i < iter->first.size(); ++i )
                     freq += iter->first[ i ]->freq;
 

@@ -15,11 +15,15 @@ Language::~Language() {
 void Language::_internal_state_read( const State *state ) {
 }
 
-Language::Block *Language::_unfold( const State *state, const State *mark, int num_next, const Cond &not_in ) {
+Language::Block *Language::_unfold( const State *state ) {
+    return _simplified( _unfold_rec( state ) );
+}
+
+Language::Block *Language::_unfold_rec( const State *state, const State *mark, int num_next, const Cond &not_in ) {
     if ( num_next == state->next.size() )
         return 0;
     if ( num_next >= 0 and num_next + 1 == state->next.size() )
-        return _unfold( state->next[ num_next ].s, mark );
+        return _unfold_rec( state->next[ num_next ].s, mark );
 
     String bid = _bid( state, num_next, not_in );
     if ( created.count( bid ) )
@@ -44,13 +48,13 @@ Language::Block *Language::_unfold( const State *state, const State *mark, int n
     res->not_in = not_in;
     if ( num_next < 0 ) {
         res->state = state;
-        res->ok = _unfold( state, mark, 0 );
+        res->ok = _unfold_rec( state, mark, 0 );
         res->ko = 0;
     } else {
         res->state = 0;
         res->cond = state->next[ num_next ].cond;
-        res->ok = _unfold( state->next[ num_next ].s, mark );
-        res->ko = _unfold( state, mark, num_next + 1, not_in | res->cond );
+        res->ok = _unfold_rec( state->next[ num_next ].s, mark );
+        res->ko = _unfold_rec( state, mark, num_next + 1, not_in | res->cond );
     }
 
     return res;
@@ -203,6 +207,54 @@ void Language::_write_dot_rec( std::ostream &os, Block *block ) {
         os << "    node_" << block << " -> node_" << block->ko << " [color=\"red\"];";
         _write_dot_rec( os, block->ko );
     }
+}
+
+void Language::_get_ch_rec( Vec<Block *> &res, Block *block ) {
+    if ( block == 0 or block->op_id == cur_op_id )
+        return;
+    block->op_id = cur_op_id;
+
+    res << block;
+    _get_ch_rec( res, block->ok );
+    _get_ch_rec( res, block->ko );
+}
+
+Language::Block *Language::_simplified( Block *block ) {
+    ++cur_op_id;
+    Vec<Block *> res;
+    _get_ch_rec( res, block );
+
+    // get op_mp
+    for( int i = 0; i < res.size(); ++i ) {
+        Block *b = res[ i ];
+        if ( b->state and b->ok and not b->state->will_write_something() and not b->ko ) {
+            b->op_mp = b->ok;
+        } else
+            b->op_mp = b;
+    }
+
+    // look for != block with the same instructions... this loop is O(... * n^2).
+    //    for( int i = 0; i < res.size(); ++i ) {
+    //        Block *bi = res[ i ];
+    //        for( int j = 0; j < i; ++j ) {
+    //            Block *bj = res[ j ];
+    //            if ( bj->ok == bi->ok and bj->ko == bi->ko ) {
+    //                if ( bj->state and bi->state and bj->state->action and bj->state->action == bi->state->action )
+    //                    bi->op_mp = bj;
+    //            }
+    //        }
+    //    }
+
+    // use op_mp
+    for( int i = 0; i < res.size(); ++i ) {
+        Block *b = res[ i ];
+        if ( b->ok ) while ( b->ok != b->ok->op_mp ) b->ok = b->ok->op_mp;
+        if ( b->ko ) while ( b->ko != b->ko->op_mp ) b->ko = b->ko->op_mp;
+    }
+
+
+
+    return block->op_mp;
 }
 
 int Language::_display_dot( Block *block, const char *f ) {

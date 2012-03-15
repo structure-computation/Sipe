@@ -51,6 +51,20 @@ Cond::operator bool() const {
     return false;
 }
 
+bool Cond::operator==( const Cond &c ) const {
+    for( int i = 0; i < p_size; ++i )
+        if ( p[ i ] != c.p[ i ] )
+            return false;
+    return true;
+}
+
+bool Cond::operator!=( const Cond &c ) const {
+    for( int i = 0; i < p_size; ++i )
+        if ( p[ i ] != c.p[ i ] )
+            return true;
+    return false;
+}
+
 Cond &Cond::operator|=( const Cond &c ) {
     for( int i = 0; i < p_size; ++i )
         p[ i ] = p[ i ] or c.p[ i ];

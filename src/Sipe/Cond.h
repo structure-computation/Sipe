@@ -23,6 +23,9 @@ public:
 
     operator bool() const;
 
+    bool operator==( const Cond &c ) const;
+    bool operator!=( const Cond &c ) const;
+
     Cond &operator|=( const Cond &c );
     Cond &operator&=( const Cond &c );
 

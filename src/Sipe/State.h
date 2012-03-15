@@ -9,6 +9,7 @@
 class State {
 public:
     struct Next {
+        bool operator!=( const Next &n ) const { return cond != n.cond or s != n.s; }
         double freq;
         Cond cond;
         State *s;
@@ -19,6 +20,7 @@ public:
     bool eq_op_id() const;
     void add_next( State *s );
     void add_next( const Next &n );
+    bool eq( const State *s ) const;
     bool will_write_something() const;
     void prev_mark( State *stop_at ) const;
     void get_children( Vec<State *> &res );

@@ -8,7 +8,7 @@ get_urls =
 content_length =
     eol 'Content-Length: '
     uint[ content_length ]
-    d[ 'sipe_data->content_length' ]
+    d[ content_length ] p
 
 post_data =
     (
@@ -23,22 +23,8 @@ put  = 'PUT '  p[ put ]
 post = 'POST ' p[ post ] post_data
 e400 = p['ERROR 400: bad request type']
 
-pc = { putchar(*data); putchar('\n'); }
-pd = { putchar('+'); putchar('\n'); }
-
-
 main =
-    get  [freq=10] |
-    put  [freq= 1] |
-    post [freq= 6] |
+    get  [freq=1] |
+    #put  [freq= 1] |
+    #post [freq= 6] |
     e400
-
-main =
-    ( 'A' |
-      ( 'B' -> pouet )  |
-      'C'
-    )
-    'D'
-    <- pouet
-
-

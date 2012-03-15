@@ -9,6 +9,9 @@ src/Sipe/Predef.cpp: src/Sipe/Predef.sipe src/txt_to_cpp.cpp
 tst: cmp
 	echo "'to\\\'to'" | ./sipe -e tests/test.sipe
 
+tsh: cmp
+	echo -e "GET /toto HTTP/1.1\nContent-Length: 128\nContent-Length: 129\n\npuet" | ./sipe -e -ds tests/http.sipe
+
 install:
 	mkdir -p ~/.kde4/share/apps/katepart/syntax
 	ln -s sipe.xml ~/.kde4/share/apps/katepart/syntax
