@@ -14,6 +14,7 @@ public:
 
     virtual void write( std::ostream &os, const CodeParm &cp, const State *state, bool write_main = false ) = 0;
 
+    bool db; ///< display blocks
 protected:
     struct Block {
         // filled by _unfold

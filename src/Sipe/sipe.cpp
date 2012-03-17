@@ -18,6 +18,7 @@ int usage( const char *prg, const char *msg, int res ) {
     cerrn << "  -dl: to display the lexem graph";
     cerrn << "  -di: to display the instruction graph";
     cerrn << "  -ds: to display the state graph";
+    cerrn << "  -db: to display the block graph";
     cerrn << "  -ws: to write the state steps";
     cerrn << "If no language is specified, " << prg << " will execute the machine on the input_files, with instructions considered as shell commands. If no input files, it reads the std input.";
     return res;
@@ -27,6 +28,7 @@ int main( int argc, char **argv ) {
     // default values
     Engine e;
     String output;
+    bool db = false;
     int first_input = 0;
     bool execute = false;
     const char *source = 0;
@@ -55,6 +57,8 @@ int main( int argc, char **argv ) {
             e.di = true;
         } else if ( strcmp( argv[ i ], "-ds" ) == 0 ) {
             e.ds = true;
+        } else if ( strcmp( argv[ i ], "-db" ) == 0 ) {
+            db = true;
         } else if ( strcmp( argv[ i ], "-ws" ) == 0 ) {
             e.ws = true;
         } else if ( strcmp( argv[ i ], "-e" ) == 0 ) {
@@ -100,6 +104,7 @@ int main( int argc, char **argv ) {
     }
 
     Language_C l( true );
+    l.db = db;
     l.write( *out, e.code_parm, state, true );
 
     if ( execute and output.size() ) {

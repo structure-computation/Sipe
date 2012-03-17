@@ -2,6 +2,7 @@
 #include "DotOut.h"
 
 Language::Language() {
+    db = false;
     nb_marks    = 0;
     nb_labels   = 0;
     cur_op_id   = 1;

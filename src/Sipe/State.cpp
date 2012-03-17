@@ -7,8 +7,11 @@
 //
 struct SortNext {
     bool operator()( const State::Next &a, const State::Next &b ) const {
-        if ( a.freq == b.freq )
-            return a.cond.nz() < b.cond.nz();
+        if ( a.freq == b.freq ) {
+            if ( a.s->prev.size() == b.s->prev.size() )
+                return a.cond.nz() < b.cond.nz();
+            return a.s->prev.size() > b.s->prev.size();
+        }
         return a.freq > b.freq;
     }
 };

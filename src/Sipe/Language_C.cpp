@@ -17,7 +17,8 @@ void Language_C::write( std::ostream &os, const CodeParm &_cp, const State *stat
 
     // unfold and get label
     Block *block = _unfold( state );
-    // _display_dot( block );
+    if ( db )
+        _display_dot( block );
     _make_labels( block );
 
     // hum...
