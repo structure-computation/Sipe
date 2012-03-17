@@ -38,6 +38,8 @@ void State::add_next( const Next &n ) {
 bool State::eq( const State *s ) const {
     if ( action and s->action == action and s->next == next )
         return true;
+    if ( incc and s->incc == incc and s->next == next )
+        return true;
     if ( next.size() > 2 and s->next == next )
         return true;
     return false;

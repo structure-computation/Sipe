@@ -25,8 +25,8 @@ main =
         any
     )**
 
-flag = {C} '/-' # cpp_flag #|
+flag = p[b] '/-' any* p[e] lf # cpp_flag #|
 
-main = 'B' ( flag | any )**
+main = '0' ( flag | any )**
 
 

@@ -15,12 +15,7 @@ String Smp::bid() const {
         os << ( i ? " I" : "I" ) << ok[ i ];
 
     for( int i = 0; i < pending.size(); ++i ) {
-        os << " [pok=" << pending[ i ].ok;
-        os << " n2k=" << pending[ i ].nok_to_pok;
-        os << " con=" << pending[ i ].cond;
-        if ( pending[ i ].action_next_round )
-            os << " act";
-        os << "]";
+        os << " [pending=[" << pending[ i ].bid() << "] n2k=" << pending[ i ].nok_to_pok << "]";
     }
 
     if ( mark )

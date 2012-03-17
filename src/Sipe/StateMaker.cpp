@@ -356,6 +356,7 @@ State *StateMaker::_jmp_code( Smp &p ) {
 
                 Smp &pe = p.pending.back();
                 pe.nok_to_pok.fill_with_range( pe.ok.size() );
+                pe.pending.resize( 0 );
             }
             p.next( i );
             p.mark = 0;
