@@ -102,6 +102,12 @@ public:
         return true;
     }
 
+    void fill_with_range( T end ) {
+        data.resize( 0 );
+        for( T i = 0; i < end; ++i )
+            data.push_back( i );
+    }
+
     std::vector<T> data;
 };
 

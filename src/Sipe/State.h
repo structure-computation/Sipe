@@ -9,7 +9,10 @@
 class State {
 public:
     struct Next {
-        bool operator!=( const Next &n ) const { return cond != n.cond or s != n.s; }
+        /// !! BEWARE !!  needs op_mp (works with simplied())
+        bool operator!=( const Next &n ) const {
+            return cond != n.cond or s->final_op_mp() != n.s->final_op_mp();
+        }
         double freq;
         Cond cond;
         State *s;
@@ -17,6 +20,7 @@ public:
 
     State();
     State *simplified();
+    State *final_op_mp();
     bool eq_op_id() const;
     void add_next( State *s );
     void add_next( const Next &n );
@@ -43,6 +47,8 @@ public:
     Vec<Next> next;
     int incc;
     int end;
+
+    String bid;
 
     // graph manipulation
     static int cur_op_id;

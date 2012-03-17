@@ -38,6 +38,8 @@ void State::add_next( const Next &n ) {
 bool State::eq( const State *s ) const {
     if ( action and s->action == action and s->next == next )
         return true;
+    if ( next.size() > 2 and s->next == next )
+        return true;
     return false;
 }
 
@@ -77,6 +79,8 @@ std::ostream &State::write_label( std::ostream &os, int lim ) const {
     if ( action )
         action->write_label( os );
 
+    //if ( set_mark )
+    //    os << "\\n" << bid;
     //for( int i = 0; i < paths.ends.size(); ++i )
     //    os << ( i ? " or\\n" : "" ) << *paths.ends[ i ];
     return os;
@@ -149,21 +153,30 @@ State *State::simplified() {
         if ( ch[ i ] == ch[ i ]->op_mp and not ch[ i ]->_is_interesting( true, true ) )
             ch[ i ]->op_mp = ch[ i ]->next[ 0 ].s->op_mp;
 
-    // try to simplify the next lists that lead to the same state
+    //
     while ( true ) {
         bool cnt = false;
+
+        // try to simplify the next lists that lead to the same state
         for( int i = 0; i < ch.size(); ++i )
             if ( ch[ i ] == ch[ i ]->op_mp )
                 cnt |= ch[ i ]->_simplify_next_list();
+
+        // O(n^2) loop to replace similar ops
+        for( int i = 0; i < ch.size(); ++i ) {
+            if ( ch[ i ]->op_mp == ch[ i ] ) {
+                for( int j = 0; j < i; ++j ) {
+                    if ( ch[ j ]->op_mp == ch[ j ] and ch[ j ]->eq( ch[ i ] ) ) {
+                        ch[ i ]->op_mp = ch[ j ];
+                        cnt = true;
+                    }
+                }
+            }
+        }
+
         if ( not cnt )
             break;
     }
-
-    // look for != block with the same instructions... this loop is O(n^2) (because prev is lazily not done) !
-    for( int i = 0; i < ch.size(); ++i )
-        for( int j = 0; j < i; ++j )
-            if ( ch[ j ]->eq( ch[ i ] ) )
-                ch[ i ]->op_mp = ch[ j ];
 
 
     // output
@@ -178,6 +191,12 @@ State *State::simplified() {
     ++cur_op_id;
     res->_update_next_prev_rec( 0 );
     return res;
+}
+
+State *State::final_op_mp() {
+    if ( this != op_mp )
+        return op_mp->final_op_mp();
+    return this;
 }
 
 bool State::will_write_something() const {

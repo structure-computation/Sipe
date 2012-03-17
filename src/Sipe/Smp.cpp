@@ -14,8 +14,14 @@ String Smp::bid() const {
     for( int i = 0; i < ok.size(); ++i )
         os << ( i ? " I" : "I" ) << ok[ i ];
 
-    for( int i = 0; i < pending.size(); ++i )
-        os << " [pending=" << pending[ i ] << "]";
+    for( int i = 0; i < pending.size(); ++i ) {
+        os << " [pok=" << pending[ i ].ok;
+        os << " n2k=" << pending[ i ].nok_to_pok;
+        os << " con=" << pending[ i ].cond;
+        if ( pending[ i ].action_next_round )
+            os << " act";
+        os << "]";
+    }
 
     if ( mark )
         os << " [mark]";
@@ -46,13 +52,23 @@ void Smp::join_branches( int j, int i ) {
 }
 
 void Smp::remove_branch( int index ) {
-    visited.erase( ok[ index ] );
+    for( int i = 0; i < pending.size(); ++i ) {
+        int v = pending[ i ].nok_to_pok[ index ], cv = 0;
+        pending[ i ].nok_to_pok.remove( index );
+        for( int j = 0; j < pending[ i ].nok_to_pok.size(); ++j )
+            cv += pending[ i ].nok_to_pok[ j ] == v;
+        if ( not cv ) {
+            pending[ i ].ok.remove( v );
+            for( int j = 0; j < pending[ i ].nok_to_pok.size(); ++j )
+                pending[ i ].nok_to_pok[ j ] -= pending[ i ].nok_to_pok[ j ] > v;
+        }
+    }
+
     ok.remove( index );
 }
 
 void Smp::init( const Instruction *inst ) {
     ok << inst;
-    visited.insert( inst );
 }
 
 bool Smp::surely_leads_to_the_end( int index ) {
@@ -60,8 +76,13 @@ bool Smp::surely_leads_to_the_end( int index ) {
 }
 
 int Smp::next( int index ) {
-    visited.insert( ok[ index ] );
     int n = ok[ index ]->next.size();
+    for( int i = 0; i < pending.size(); ++i ) {
+        int v = pending[ i ].nok_to_pok[ index ];
+        for( int j = 0; j < n - 1; ++j )
+            pending[ i ].nok_to_pok.insert( index, v );
+    }
+
     ok.replace( index, ok[ index ]->next );
     return n;
 }
@@ -75,7 +96,7 @@ std::ostream &operator<<( std::ostream &os, const Smp &p ) {
     if ( not p.allow_incc )
         os << " [no incc]";
     for( int i = 0; i < p.pending.size(); ++i )
-        os << " [pending=" << p.pending[ i ].ok << "]";
+        os << " [pending=" << p.pending[ i ].ok << " n2p=" << p.pending[ i ].nok_to_pok << "]";
     if ( p.mark )
         os << " [mark]";
     return os; // << " " << p.bid();

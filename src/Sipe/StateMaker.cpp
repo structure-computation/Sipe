@@ -29,7 +29,7 @@ State *StateMaker::make( const Instruction *inst, bool ws ) {
     p.display_steps = ws;
     State *res = _make_rec( p, "init" );
 
-    //return res;
+    // return res;
     return res->simplified();
 }
 
@@ -85,6 +85,7 @@ State *StateMaker::_make_rec( Smp &p, const char *step ) {
 
 State *StateMaker::_new_State( const Smp &p ) {
     State *res = new State;
+    res->bid = p.bid();
     created[ p.bid() ] = res;
     return res;
 }
@@ -94,11 +95,8 @@ State *StateMaker::_same_bid( Smp &p ) {
     if ( p.display_steps and iter != created.end() )
         coutn << p.display_prefix << "found same bid " << p.bid();
 
-    if ( iter != created.end() ) {
-        //for( std::set<const Instruction *>::const_iterator v = p.visited.begin(); v != p.visited.end(); ++v )
-        //    iter->second->visited.insert( *v );
+    if ( iter != created.end() )
         return iter->second;
-    }
 
     return 0;
 }
@@ -180,12 +178,12 @@ State *StateMaker::_use_pend( Smp &p ) {
         }
 
         //
-        for( int j = 0; j < pe.ok.size(); ++j ) {
-            if ( not pe.ok[ j ]->can_lead_to( p.ok, p.visited ) ) {
-                pe.remove_branch( j );
-                return _make_rec( p, "rem pend" );
-            }
-        }
+        //        for( int j = 0; j < pe.ok.size(); ++j ) {
+        //            if ( not pe.ok[ j ]->can_lead_to( p.ok, p.visited ) ) {
+        //                pe.remove_branch( j );
+        //                return _make_rec( p, "rem pend" );
+        //            }
+        //        }
     }
 
     return 0;
@@ -353,8 +351,12 @@ State *StateMaker::_jmp_code( Smp &p ) {
             State *res = _new_State( p );
             if ( p.ok.size() == 1 )
                 res->action = p.ok[ i ];
-            else
+            else {
                 p.pending << p;
+
+                Smp &pe = p.pending.back();
+                pe.nok_to_pok.fill_with_range( pe.ok.size() );
+            }
             p.next( i );
             p.mark = 0;
 
