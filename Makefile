@@ -7,7 +7,7 @@ src/Sipe/Predef.cpp: src/Sipe/Predef.sipe src/txt_to_cpp.cpp
 	metil_comp -Isrc src/txt_to_cpp.cpp src/Sipe/Predef.cpp src/Sipe/Predef.sipe predef
 
 tst: cmp
-	echo -e "//- cpp_flag tata\n//- cpp_flag toto\n" | ./sipe -e -ds tests/test.sipe
+	echo -e "//- cpp_flag tata\n//- cpp_flag toto\n" | ./sipe -e tests/test.sipe
 
 tsh: cmp
 	echo -e "GET /toto HTTP/1.1\nContent-Length: 128\nContent-Length: 129\n\npuet" | ./sipe -e -ds tests/http.sipe
