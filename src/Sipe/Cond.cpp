@@ -187,6 +187,8 @@ String Cond::_cpp( String var, bool w, const Cond *not_in = 0 ) const {
 
     // var >= ... and var <= ...
     std::ostringstream res;
+    if ( ra.size() > 2 and ne.size() )
+        res << "( ";
     for( int i = 0; i < ra.size(); i += 2 ) {
         if ( i )
             res << " or ";
@@ -205,6 +207,8 @@ String Cond::_cpp( String var, bool w, const Cond *not_in = 0 ) const {
                 cc( res << var << " >= ", ra[ i + 0 ] );
         }
     }
+    if ( ra.size() > 2 and ne.size() )
+        res << " )";
 
     // var != ...
     for( int i = 0; i < ne.size(); ++i ) {
