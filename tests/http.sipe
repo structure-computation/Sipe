@@ -11,12 +11,15 @@ content_length =
     d[ content_length ] p
 
 post_data =
+    { sipe_data->content_length = 0; }
     (
         content_length |
         ( eol eol -> end_post_data ) |
         any
     )**
     <- end_post_data
+    { std::cout.write( data + 1, sipe_data->content_length ); }
+    p
 
 get  = 'GET '  p[ get ] # get_urls
 put  = 'PUT '  p[ put ]
@@ -24,7 +27,7 @@ post = 'POST ' p[ post ] post_data
 e400 = p['ERROR 400: bad request type']
 
 main =
-    #get  [freq=10] |
-    #put  [freq= 1] |
+    get  [freq=10] |
+    put  [freq= 1] |
     post [freq= 6] |
     e400
