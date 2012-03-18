@@ -24,7 +24,7 @@ post = 'POST ' p[ post ] post_data
 e400 = p['ERROR 400: bad request type']
 
 main =
-    get  [freq=10] |
-    put  [freq= 1] |
+    #get  [freq=10] |
+    #put  [freq= 1] |
     post [freq= 6] |
     e400

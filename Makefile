@@ -10,7 +10,9 @@ tst: cmp
 	echo -e "//- cpp_flag tata\n//- cpp_flag toto\n" | ./sipe -e tests/test.sipe
 
 tsh: cmp
-	echo -e "GET /toto HTTP/1.1\nContent-Length: 128\nContent-Length: 129\n\npuet" | ./sipe -e -ds tests/http.sipe
+	#echo -e -n "GET /toto HTTP/1.1\nContent-Length: 128\nContent-Length: 129\n\npuet" > rec
+	cat rec
+	./sipe -e tests/http.sipe rec
 
 install:
 	mkdir -p ~/.kde4/share/apps/katepart/syntax
