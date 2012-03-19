@@ -29,6 +29,9 @@ void Language_C::write( std::ostream &os, const CodeParm &_cp, const State *stat
         on << "#include <fcntl.h>";
         on << "#endif // SIPE_MAIN";
     }
+    on << "#ifndef SIPE_CHARP";
+    on << "#define SIPE_CHARP const char *";
+    on << "#endif // SIPE_CHARP";
 
     //
     _write_preliminaries( os );
@@ -46,6 +49,14 @@ void Language_C::write( std::ostream &os, const CodeParm &_cp, const State *stat
         _write_dest_func( os, "    ", "sipe_data->" );
         on << "}";
     }
+
+    on << "#ifdef SIPE_CLASS";
+    on << "int parse( SIPE_CHARP beg, SIPE_CHARP end ) {";
+    on << "    parse( &sipe_data, beg, end );";
+    on << "}";
+    on << "SipeData sipe_data;";
+    on << "#endif // SIPE_CLASS";
+
 
     //
     if ( write_main ) {
@@ -138,7 +149,7 @@ void Language_C::_write_parse_func( std::ostream &os ) {
     on.beg = sp.c_str();
 
     // parse
-    os << "int parse" << f_suf << "( " << cp->struct_name << " *sipe_data, const char *data, const char *end ) {\n";
+    os << "int parse" << f_suf << "( " << cp->struct_name << " *sipe_data, SIPE_CHARP data, SIPE_CHARP end ) {\n";
     on << "if ( sipe_data->_inp_cont )";
     on << "    goto *sipe_data->_inp_cont;";
     on << "";
