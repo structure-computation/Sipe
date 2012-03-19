@@ -1,5 +1,6 @@
 # char sets
 any       = 0 .. 256 # Any character in the alphabet.
+none      = 257
 ascii     = 0 .. 127 # Ascii characters. 0..127
 extend    = 0 .. 256 # Ascii extended characters. This is the range -128..127 for signed alphabets and the range 0..255 for unsigned alphabets.
 lower     = 'a' .. 'z' # Lowercase characters. [a-z]
