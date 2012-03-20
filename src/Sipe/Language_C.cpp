@@ -98,7 +98,6 @@ void Language_C::_write_declarations( std::ostream &os ) {
         on << "";
     }
     on << "    void *_inp_cont;";
-    P ( nb_marks );
     if ( nb_marks )
         on << "    const char *_mark[ " << nb_marks << " ];";
     for( int i = 0; i < cp->attributes.size(); ++i )
