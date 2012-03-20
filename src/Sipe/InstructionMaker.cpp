@@ -28,7 +28,7 @@ InstructionMaker::~InstructionMaker() {
 }
 
 Instruction *InstructionMaker::make( const char *name ) {
-    Source sm; sm.data = "main"; sm.provenance = "internal";
+    Source sm( "internal", "main", 0, false);
     Lexem main( Lexem::VARIABLE, &sm, name, name + strlen( name ) );
 
     // graph from $name
