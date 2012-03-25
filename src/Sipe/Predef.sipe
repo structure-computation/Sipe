@@ -54,6 +54,9 @@ d[ val = "*data" ] =
 
 #
 beg_var[ var_name ] = 
+    add_prel[ '#ifdef SIPE_MAIN' ]
+    add_prel[ '#include <string>' ]
+    add_prel[ '#endif // SIPE_MAIN' ]
     add_attr[ 'SIPE_CHARP beg_var_name;' ]
     add_attr[ 'std::string var_name;' ]
     { sipe_data->beg_var_name = data + 1; }

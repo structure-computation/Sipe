@@ -1,32 +1,9 @@
-# main = '"' { beg = data + 1; } any** { std::cout.write( beg, data - beg ); coutn << "<-"; } '"' #
-# any ** { P( "E" ); } '"'
-# main = ( { P( "A" ); } 'A' ) | ( { P( "B" ); } 'B' )
+update = ( digit {B} )** # ' '
 
-cp = '/' beg_var[ cpp_flag ] any* 'E' end_var[ cpp_flag ] i[ 'sipe_data->cpp_flag' ]
+additionnal_purl = ( update | any )**
 
-c_str = 
-    "'" 
-    beg_var[ cpp_flag ] 
+main = 'P' additionnal_purl
 
-    (
-        "\\" |
-        "\'" |
-        ( "'" -> e ) |
-        any
-    )**
-
-    <- e
-    end_var[ cpp_flag ]
-    i[ 'sipe_data->cpp_flag' ]
-
-main =
-    (
-        ( 'toto ' uint[val] d[val] p ) |
-        any
-    )**
-
-flag = p[b] '/' any* p[e] ( cr | lf ) # cpp_flag #|
-
-main = ( flag | any )**
-
-
+# element time square west -> 724 $ pr 3 nuit, 241 (181e)
+# gild hall -> 293 (220e)
+#  
