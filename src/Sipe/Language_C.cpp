@@ -99,7 +99,7 @@ void Language_C::_write_declarations( std::ostream &os ) {
     }
     on << "    void *_inp_cont;";
     if ( nb_marks )
-        on << "    const char *_mark[ " << nb_marks << " ];";
+        on << "    SIPE_CHARP _mark[ " << nb_marks << " ];";
     for( int i = 0; i < cp->attributes.size(); ++i )
         on << "    " << cp->attributes[ i ].decl;
     on << "};";

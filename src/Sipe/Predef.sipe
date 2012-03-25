@@ -26,7 +26,7 @@ end       = { end: inp_cont = &&end; return false; } any** #
 
 # mandatory arg: val (e.g. unsigned_int_reader[ val = 'content_length' ])
 uint[ val ] =
-    add_attr[ 'unsigned val;' 'sipe_data->val = 0;' ]
+    add_attr[ 'unsigned long val;' 'sipe_data->val = 0;' ]
     digit { sipe_data->val = *data - '0'; }
     ( digit { sipe_data->val = 10 * sipe_data->val + ( *data - '0' ); } )**
 
@@ -54,9 +54,9 @@ d[ val = "*data" ] =
 
 #
 beg_var[ var_name ] = 
-    add_attr[ 'const char *beg_var_name;' ]
+    add_attr[ 'SIPE_CHARP beg_var_name;' ]
     add_attr[ 'std::string var_name;' ]
-    { sipe_data->beg_var_name = data; }
+    { sipe_data->beg_var_name = data + 1; }
 
 
 #
