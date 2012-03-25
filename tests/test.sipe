@@ -1,4 +1,4 @@
-update = ( digit {B} )** # ' '
+update = ( digit )** # ' '
 
 additionnal_purl = ( update | any )**
 
