@@ -352,11 +352,10 @@ State *StateMaker::_jmp_code( Smp &p ) {
             if ( p.ok.size() == 1 )
                 res->action = p.ok[ i ];
             else {
-                p.pending << p;
-
-                Smp &pe = p.pending.back();
+                Smp pe = p;
                 pe.nok_to_pok.fill_with_range( pe.ok.size() );
                 pe.pending.resize( 0 );
+                p.pending << pe;
             }
             p.next( i );
             p.mark = 0;
@@ -372,7 +371,7 @@ State *StateMaker::_jmp_code( Smp &p ) {
 State *StateMaker::_jmp_incc( Smp &p ) {
     bool mi = true, ma = false;
     for( int i = 0; i < p.ok.size(); ++i ) {
-        if ( p.ok[ i ]->next.size() ) {
+        if ( p.ok[ i ]->next.size() and not p.ok[ i ]->is_in_branching_loop() ) {
             mi &= p.ok[ i ]->incc;
             ma |= p.ok[ i ]->incc;
         }
@@ -382,7 +381,7 @@ State *StateMaker::_jmp_incc( Smp &p ) {
         // incc not allowed ?
         if ( not p.allow_incc ) {
             for( int i = 0; i < p.ok.size(); ++i )
-                if ( p.ok[ i ]->next.size() )
+                if ( p.ok[ i ]->next.size() and not p.ok[ i ]->is_in_branching_loop() )
                     i += p.next( i ) - 1;
             p.allow_incc = true;
             return _make_rec( p, "jmp_incd" );
@@ -390,7 +389,7 @@ State *StateMaker::_jmp_incc( Smp &p ) {
 
         State *s = _new_State( p );
         for( int i = 0; i < p.ok.size(); ++i )
-            if ( p.ok[ i ]->next.size() )
+            if ( p.ok[ i ]->next.size() and not p.ok[ i ]->is_in_branching_loop() )
                 i += p.next( i ) - 1;
         p.cond.clear();
 

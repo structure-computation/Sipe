@@ -30,8 +30,10 @@ public:
     bool surely_leads_to_the_end( const Cond *cond, int nb_incc_allowed ) const;
     void write_code( StreamSepMaker<std::ostream> &os, Language *l ) const; ///<
     std::ostream &write_label( std::ostream &os ) const; ///<
+    void get_children( Vec<const Instruction *> &vec ) const;
     void get_children( Vec<Instruction *> &vec );
     Instruction &operator<<( Instruction *n ); ///< add to next
+    bool is_in_branching_loop() const;
     bool branching_only() const;
     bool is_an_action() const;
     bool needs_data() const; ///< true if data is needed for the action
@@ -56,9 +58,11 @@ protected:
     bool _can_lead_to_rec( const Instruction *dst, const std::set<const Instruction *> &allowed ) const;
     bool _get_next_conds_rec( Vec<const Instruction *> &conds, int nb_incc_allowed ) const;
     bool _surely_leads_to_the_end_rec( const Cond *cond, int nb_incc_allowed ) const;
+    void _get_children_rec( Vec<const Instruction *> &vec ) const;
     void _get_children_rec( Vec<Instruction *> &vec );
     void _write_dot_rec( std::ostream &os ) const;
     bool _can_lead_to_an_incc_rec() const;
+    bool _is_in_branching_loop() const;
 
     mutable Instruction *op_mp;
     static int cur_op_id;

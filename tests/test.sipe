@@ -1,9 +1,5 @@
-update = ( digit )** # ' '
+update = uint[P] ' ' i[P]
 
 additionnal_purl = ( update | any )**
 
 main = 'P' additionnal_purl
-
-# element time square west -> 724 $ pr 3 nuit, 241 (181e)
-# gild hall -> 293 (220e)
-#  

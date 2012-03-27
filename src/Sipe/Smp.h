@@ -16,6 +16,7 @@ public:
     void join_branches( int j, int i );
     void init( const Instruction *inst );
     bool surely_leads_to_the_end( int index );
+    void rm_double_pending();
 
     const Instruction *action_next_round;
     Vec<const Instruction *> ok;

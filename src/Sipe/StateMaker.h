@@ -3,6 +3,7 @@
 
 #include "State.h"
 #include <map>
+#include <set>
 struct Smp;
 
 /**

@@ -60,6 +60,7 @@ void Smp::remove_branch( int index ) {
     }
 
     ok.remove( index );
+    rm_double_pending();
 }
 
 void Smp::init( const Instruction *inst ) {
@@ -79,7 +80,20 @@ int Smp::next( int index ) {
     }
 
     ok.replace( index, ok[ index ]->next );
+    rm_double_pending();
     return n;
+}
+
+void Smp::rm_double_pending() {
+    for( int i = 0; i < pending.size(); ++i ) {
+        for( int j = 0; j < i; ++j ) {
+            if ( pending[ j ].bid() == pending[ i ].bid() and pending[ j ].nok_to_pok == pending[ i ].nok_to_pok ) {
+                pending.remove( i-- );
+                P( "REMOVED" );
+                break;
+            }
+        }
+    }
 }
 
 std::ostream &operator<<( std::ostream &os, const Smp &p ) {

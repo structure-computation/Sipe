@@ -52,6 +52,11 @@ bool Instruction::can_lead_to( const Instruction *dst, const std::set<const Inst
     return _can_lead_to_rec( dst, allowed );
 }
 
+bool Instruction::is_in_branching_loop() const {
+    ++cur_op_id;
+    return _is_in_branching_loop();
+}
+
 bool Instruction::get_next_conds( Vec<const Instruction *> &conds, int nb_incc_allowed ) const {
     ++cur_op_id;
     return _get_next_conds_rec( conds, nb_incc_allowed );
@@ -121,6 +126,11 @@ int Instruction::ascii_val() const {
     return cond and cond->nz() == 1 ? cond->first_nz() : -1;
 }
 
+void Instruction::get_children( Vec<const Instruction *> &vec ) const {
+    ++Instruction::cur_op_id;
+    _get_children_rec( vec );
+}
+
 void Instruction::get_children( Vec<Instruction *> &vec ) {
     ++Instruction::cur_op_id;
     _get_children_rec( vec );
@@ -152,6 +162,20 @@ bool Instruction::_can_lead_to_rec( const Instruction *dst, const std::set<const
             return true;
     }
     return false;
+}
+
+bool Instruction::_is_in_branching_loop() const {
+    if ( not branching_only() )
+        return false;
+
+    if ( op_id == cur_op_id )
+        return true;
+    op_id = cur_op_id;
+
+    bool res = false;
+    for( int i = 0; i < next.size(); ++i )
+        res |= next[ i ]->_is_in_branching_loop();
+    return res;
 }
 
 bool Instruction::can_lead_to_an_incc( const Vec<const Instruction *> &lst ) {
@@ -241,6 +265,16 @@ bool Instruction::_surely_leads_to_the_end_rec( const Cond *_cond, int nb_incc_a
     return false;
 }
 
+
+void Instruction::_get_children_rec( Vec<const Instruction *> &vec ) const {
+    if ( op_id == cur_op_id )
+        return;
+    op_id = cur_op_id;
+
+    vec << this;
+    for( int i = 0; i < next.size(); ++i )
+        next[ i ]->_get_children_rec( vec );
+}
 
 void Instruction::_get_children_rec( Vec<Instruction *> &vec ) {
     if ( op_id == cur_op_id )
