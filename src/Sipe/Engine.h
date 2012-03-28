@@ -20,6 +20,7 @@ public:
     Instruction *make_instruction_seq( const char *machine );
     State *make_state_seq( const Instruction *inst );
     State *make_state_seq( const char *machine );
+    int ret() const; ///< return code
 
     CodeParm code_parm;
     bool dl; ///< display lexem graph ?

@@ -117,5 +117,7 @@ int main( int argc, char **argv ) {
                 cmd << " '" << argv[ i ] << "'";
         return system( cmd.str().c_str() );
     }
+
+    return e.ret();
 }
 

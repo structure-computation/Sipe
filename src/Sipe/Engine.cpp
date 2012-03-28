@@ -53,3 +53,7 @@ State *Engine::make_state_seq( const Instruction *inst ) {
 State *Engine::make_state_seq( const char *machine ) {
     return make_state_seq( make_instruction_seq( machine ) );
 }
+
+int Engine::ret() const {
+    return not error_list;
+}
