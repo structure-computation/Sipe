@@ -43,7 +43,7 @@ i[ val = "*data" ] =
     add_prel[ '#ifdef SIPE_MAIN' ]
     add_prel[ '#include <iostream>' ]
     add_prel[ '#endif // SIPE_MAIN' ]
-    { std::cout << "val -> " << sipe_data->val << std::endl; }
+    { std::cout << "val -> '" << sipe_data->val << "'" << std::endl; }
 
 # print a value (by default, print current char)
 d[ val = "*data" ] =
@@ -65,5 +65,13 @@ beg_var[ var_name ] =
 #
 end_var[ var_name ] = 
     { sipe_data->var_name = std::string( sipe_data->beg_var_name, data + 1 ); }
+
+
+#
+word[ var_name ] =
+    beg_var[ var_name ]
+    any*
+    end_var[ var_name ]
+
 
 
