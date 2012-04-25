@@ -52,7 +52,7 @@ void Language_C::write( std::ostream &os, const CodeParm &_cp, const State *stat
 
     on << "#ifdef SIPE_CLASS";
     on << "int parse( SIPE_CHARP beg, SIPE_CHARP end ) {";
-    on << "    parse( &sipe_data, beg, end );";
+    on << "    return parse( &sipe_data, beg, end );";
     on << "}";
     on << "SipeData sipe_data;";
     on << "#endif // SIPE_CLASS";
@@ -269,5 +269,6 @@ void Language_C::_write_main_func( std::ostream &os ) {
     on << "        else";
     on << "            parse_file( fd );";
     on << "    }";
+    on << "    return 0;";
     on << "}";
 }
