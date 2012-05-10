@@ -73,5 +73,18 @@ word[ var_name ] =
     any*
     end_var[ var_name ]
 
+# read binary int little endian
+uint32_bin_le[ val ] = 
+    add_attr[ 'unsigned long val;' 'sipe_data->val = 0;' ]
+    any { sipe_data->val  = *reinterpret_cast<const unsigned char *>( data ) <<  0; }
+    any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) <<  8; }
+    any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) << 16; }
+    any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) << 24; }
+
+# read a string (char *)
+str_sized[ val, len ] = 
+    add_attr[ 'char *val;' 'sipe_data->val = 0;' ]
+    { sipe_data->val = ++data; data += len ; }
+
 
 
