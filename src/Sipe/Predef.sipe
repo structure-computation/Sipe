@@ -75,11 +75,23 @@ word[ var_name ] =
 
 # read binary int little endian
 uint32_bin_le[ val ] = 
-    add_attr[ 'unsigned long val;' 'sipe_data->val = 0;' ]
+    add_attr[ 'unsigned val;' 'sipe_data->val = 0;' ]
     any { sipe_data->val  = *reinterpret_cast<const unsigned char *>( data ) <<  0; }
     any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) <<  8; }
     any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) << 16; }
     any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) << 24; }
+
+# read binary int little endian
+uint64_bin_le[ val ] =
+    add_attr[ 'unsigned long val;' 'sipe_data->val = 0;' ]
+    any { sipe_data->val  = (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  0; }
+    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  8; }
+    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 16; }
+    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 24; }
+    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 32; }
+    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 40; }
+    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 48; }
+    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 56; }
 
 # read a string (char *)
 str_sized[ val, len ] = 
