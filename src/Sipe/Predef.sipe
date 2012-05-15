@@ -25,8 +25,8 @@ zlen      = '' # Zero length string
 end       = { end: inp_cont = &&end; return false; } any** #
 
 # mandatory arg: val (e.g. unsigned_int_reader[ val = 'content_length' ])
-uint[ val ] =
-    add_attr[ 'unsigned long val;' 'sipe_data->val = 0;' ]
+uint[ val, type = 'unsigned long' ] =
+    add_attr[ 'type val;' 'sipe_data->val = 0;' ]
     digit { sipe_data->val = *data - '0'; }
     ( digit { sipe_data->val = 10 * sipe_data->val + ( *data - '0' ); } )**
 
