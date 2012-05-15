@@ -2,13 +2,23 @@
 #include "Instruction.h"
 #include <string.h>
 #include <stdlib.h>
+#include <sstream>
 
-static String repl_parm( String str, const FuncParm &params ) {
+static String repl_parm( const Lexem *lex, ErrorList &error_list, String str, const FuncParm &params ) {
     for( int i = 0; i < params.n_params.size(); ++i ) {
         if ( params.n_params[ i ].first == params.n_params[ i ].second )
             continue;
 
+        int p = params.n_params[ i ].second.find( params.n_params[ i ].first );
+        if ( p >= 0 ) {
+            std::ostringstream ss;
+            ss << "same pattern in source (" << params.n_params[ i ].first << ") and destination (" << params.n_params[ i ].second << ")";
+            error_list.add( lex->source, lex->beg, ss.str().c_str() );
+            continue;
+        }
+
         while ( true ) {
+            // std::cerr << str << " " << params.n_params[ i ].first << " " << params.n_params[ i ].second << std::endl;
             int p = str.find( params.n_params[ i ].first );
             if ( p < 0 )
                 break;
@@ -19,7 +29,7 @@ static String repl_parm( String str, const FuncParm &params ) {
 }
 
 
-InstructionMaker::InstructionMaker( CodeParm &code_parm, LexemMaker &lexem_maker ) : lexem_maker( lexem_maker ), code_parm( code_parm ) {
+InstructionMaker::InstructionMaker( ErrorList &error_list, CodeParm &code_parm, LexemMaker &lexem_maker ) : error_list( error_list ), lexem_maker( lexem_maker ), code_parm( code_parm ) {
 }
 
 InstructionMaker::~InstructionMaker() {
@@ -154,7 +164,7 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par 
             src = app( src, new Instruction( lex, par.freq, 1 ) );
             src = app( src, new Instruction( lex, par.freq, Cond( lex->to_int() ) ) );
         } else if ( lex->type == Lexem::CODE ) {
-            src = app( src, new Instruction( lex, par.freq, repl_parm( String( lex->beg, lex->end ), par.params ) ) );
+            src = app( src, new Instruction( lex, par.freq, repl_parm( lex, error_list, String( lex->beg, lex->end ), par.params ) ) );
         } else if ( lex->type == Lexem::OPERATOR ) {
             if ( lex->eq( "|" ) ) {
                 Instruction *beg = src;
@@ -216,9 +226,9 @@ Instruction *InstructionMaker::app( Instruction *src, const Lexem *lex, Par par 
                     if ( c->eq( Lexem::OPERATOR, "=" ) and c->next ) { // named param ?
                         String name( c->children[ 0 ]->beg, c->children[ 0 ]->end );
                         c = c->next;
-                        n_par.params.n_params << FuncParm::NamedP( name, repl_parm( String( c->beg, c->end ), par.params ) );
+                        n_par.params.n_params << FuncParm::NamedP( name, repl_parm( lex, error_list, String( c->beg, c->end ), par.params ) );
                     } else
-                        n_par.params.u_params << repl_parm( String( c->beg, c->end ), par.params );
+                        n_par.params.u_params << repl_parm( lex, error_list, String( c->beg, c->end ), par.params );
                 }
                 src = app( src, lex->children[ 0 ], n_par );
             }

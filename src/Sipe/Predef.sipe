@@ -67,36 +67,38 @@ end_var[ var_name ] =
     { sipe_data->var_name = std::string( sipe_data->beg_var_name, data + 1 ); }
 
 
-#
-word[ var_name ] =
-    beg_var[ var_name ]
+# should be followed by a stoping condition (e.g. ' ')
+word[ __var__ ] =
+    beg_var[ __var__ ]
     any*
-    end_var[ var_name ]
+    end_var[ __var__ ]
 
 # read binary int little endian
-uint32_bin_le[ val ] = 
-    add_attr[ 'unsigned val;' 'sipe_data->val = 0;' ]
-    any { sipe_data->val  = *reinterpret_cast<const unsigned char *>( data ) <<  0; }
-    any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) <<  8; }
-    any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) << 16; }
-    any { sipe_data->val += *reinterpret_cast<const unsigned char *>( data ) << 24; }
+uint32_bin_le[ __val__ ] =
+    add_attr[ 'unsigned __val__;' 'sipe_data->__val__ = 0;' ]
+    any { sipe_data->__val__  = *reinterpret_cast<const unsigned char *>( data ) <<  0; }
+    any { sipe_data->__val__ += *reinterpret_cast<const unsigned char *>( data ) <<  8; }
+    any { sipe_data->__val__ += *reinterpret_cast<const unsigned char *>( data ) << 16; }
+    any { sipe_data->__val__ += *reinterpret_cast<const unsigned char *>( data ) << 24; }
 
 # read binary int little endian
-uint64_bin_le[ val ] =
-    add_attr[ 'unsigned long val;' 'sipe_data->val = 0;' ]
-    any { sipe_data->val  = (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  0; }
-    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  8; }
-    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 16; }
-    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 24; }
-    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 32; }
-    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 40; }
-    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 48; }
-    any { sipe_data->val += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 56; }
+uint64_bin_le[ __val__ ] =
+    add_attr[ 'unsigned long __val__;' 'sipe_data->__val__ = 0;' ]
+    any { sipe_data->__val__  = (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  0; }
+    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  8; }
+    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 16; }
+    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 24; }
+    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 32; }
+    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 40; }
+    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 48; }
+    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 56; }
 
 # read a string (char *)
-str_sized[ val, len ] = 
-    add_attr[ 'char *val;' 'sipe_data->val = 0;' ]
-    { sipe_data->val = ++data; data += len ; }
+str_sized[ __val__, __len__ ] =
+    add_attr[ 'char *__val__;' 'sipe_data->__val__ = 0;' ]
+    { sipe_data->__val__ = ++data; data += __len__;  }
 
-
-
+# size 32 bits then data
+str_32[ __len__ = 'len', __str__ = 'str' ] =
+    uint32_bin_le[ '__len__' ]
+    str_sized[ __str__, 'sipe_data->__len__' ]

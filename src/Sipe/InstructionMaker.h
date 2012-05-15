@@ -11,7 +11,7 @@
 */
 class InstructionMaker {
 public:
-    InstructionMaker( CodeParm &code_parm, LexemMaker &lexem_maker );
+    InstructionMaker( ErrorList &error_list, CodeParm &code_parm, LexemMaker &lexem_maker );
     ~InstructionMaker();
 
     Instruction *make( const char *name );
@@ -29,6 +29,7 @@ protected:
 
     std::map<String,Instruction> labels;
     Vec<Instruction *> to_del;
+    ErrorList &error_list;
     LexemMaker &lexem_maker;
     CodeParm &code_parm;
 };
