@@ -96,7 +96,7 @@ uint64_bin_le[ __val__ ] =
 # read a string (char *)
 str_sized[ __val__, __len__ ] =
     add_attr[ 'char *__val__;' 'sipe_data->__val__ = 0;' ]
-    { sipe_data->__val__ = ++data; data += __len__;  }
+    { sipe_data->__val__ = data + 1; data += __len__;  }
 
 # size 32 bits then data
 str_32[ __len__ = 'len', __str__ = 'str' ] =
