@@ -82,16 +82,16 @@ uint32_bin_le[ __val__ ] =
     any { sipe_data->__val__ += *reinterpret_cast<const unsigned char *>( data ) << 24; }
 
 # read binary int little endian
-uint64_bin_le[ __val__ ] =
-    add_attr[ 'unsigned long __val__;' 'sipe_data->__val__ = 0;' ]
-    any { sipe_data->__val__  = (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  0; }
-    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) <<  8; }
-    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 16; }
-    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 24; }
-    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 32; }
-    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 40; }
-    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 48; }
-    any { sipe_data->__val__ += (unsigned long)*reinterpret_cast<const unsigned char *>( data ) << 56; }
+uint64_bin_le[ __val__, __type__ = 'quint64' ] =
+    add_attr[ '__type__ __val__;' 'sipe_data->__val__ = 0;' ]
+    any { sipe_data->__val__  = (__type__)*reinterpret_cast<const unsigned char *>( data ) <<  0; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) <<  8; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 16; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 24; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 32; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 40; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 48; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 56; }
 
 # read a string (char *)
 str_sized[ __val__, __len__ ] =
