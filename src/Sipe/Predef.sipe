@@ -52,6 +52,13 @@ d[ __val__ = "*data" ] =
     add_prel[ '#endif // SIPE_MAIN' ]
     { std::cout << sipe_data->__val__; }
 
+# print a value (by default, print current char)
+c =
+    add_prel[ '#ifdef SIPE_MAIN' ]
+    add_prel[ '#include <iostream>' ]
+    add_prel[ '#endif // SIPE_MAIN' ]
+    { std::cout << *data; }
+
 # should be followed by a stoping condition (e.g. ' ')
 word[ __var__ ] =
     add_prel[ '#ifdef SIPE_MAIN' ]

@@ -13,6 +13,7 @@ public:
 
     virtual void write( std::ostream &os, const CodeParm &cp, const State *state, bool write_main = false );
 
+    const char *buffer_length;
 protected:
     void _write_init_func( std::ostream &os, const char *sp, const char *sn );
     void _write_dest_func( std::ostream &os, const char *sp, const char *sn );
@@ -25,7 +26,7 @@ protected:
 
     struct Cnt {
         Vec<State *> active_marks;
-        const State *mark;
+        Block *block;
         int label;
     };
 

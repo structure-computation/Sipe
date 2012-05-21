@@ -2,4 +2,4 @@ update = uint[P] ' ' i[P]
 
 additionnal_purl = ( update | any )**
 
-main = 'P' additionnal_purl
+main = c 'PQRS '

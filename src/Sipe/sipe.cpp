@@ -13,8 +13,9 @@ int usage( const char *prg, const char *msg, int res ) {
     cerrn << "Possible options are:";
     cerrn << "  -o filename: file name for code output";
     cerrn << "  -l language: output langage (in C, C++, Javascript)";
-    cerrn << "  -l machine: oentry point ('main'' by default)";
+    cerrn << "  -m machine: oentry point ('main'' by default)";
     cerrn << "  -e: compile and execute";
+    cerrn << "  -L : buffer length for execution";
     cerrn << "  -dl: to display the lexem graph";
     cerrn << "  -di: to display the instruction graph";
     cerrn << "  -ds: to display the state graph";
@@ -30,6 +31,7 @@ int main( int argc, char **argv ) {
     String output;
     bool db = false;
     int first_input = 0;
+    const char *buffer_length = "2048";
     bool execute = false;
     const char *source = 0;
     const char *machine = 0;
@@ -51,6 +53,10 @@ int main( int argc, char **argv ) {
             if ( i + 1 >= argc )
                 return usage( argv[ 0 ], "-m must be followed by an argument", 3 );
             machine = argv[ ++i ];
+        } else if ( strcmp( argv[ i ], "-L" ) == 0 ) {
+            if ( i + 1 >= argc )
+                return usage( argv[ 0 ], "-l must be followed by an argument", 2 );
+            buffer_length = argv[ ++i ];
         } else if ( strcmp( argv[ i ], "-dl" ) == 0 ) {
             e.dl = true;
         } else if ( strcmp( argv[ i ], "-di" ) == 0 ) {
@@ -105,6 +111,7 @@ int main( int argc, char **argv ) {
 
     Language_C l( true );
     l.db = db;
+    l.buffer_length = buffer_length;
     l.write( *out, e.code_parm, state, true );
 
     if ( execute and output.size() ) {
