@@ -24,6 +24,7 @@ protected:
     void _write_code( std::ostream &os, const State *mark );
 
     struct Cnt {
+        Vec<State *> active_marks;
         const State *mark;
         int label;
     };

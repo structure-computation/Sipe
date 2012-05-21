@@ -46,32 +46,20 @@ i[ val = "*data" ] =
     { std::cout << "val -> '" << sipe_data->val << "'" << std::endl; }
 
 # print a value (by default, print current char)
-d[ val = "*data" ] =
+d[ __val__ = "*data" ] =
     add_prel[ '#ifdef SIPE_MAIN' ]
     add_prel[ '#include <iostream>' ]
     add_prel[ '#endif // SIPE_MAIN' ]
-    { std::cout << sipe_data->val; }
-
-#
-beg_var[ var_name ] = 
-    add_prel[ '#ifdef SIPE_MAIN' ]
-    add_prel[ '#include <string>' ]
-    add_prel[ '#endif // SIPE_MAIN' ]
-    add_attr[ 'SIPE_CHARP beg_var_name;' ]
-    add_attr[ 'std::string var_name;' ]
-    { sipe_data->beg_var_name = data + 1; }
-
-
-#
-end_var[ var_name ] = 
-    { sipe_data->var_name = std::string( sipe_data->beg_var_name, data + 1 ); }
-
+    { std::cout << sipe_data->__val__; }
 
 # should be followed by a stoping condition (e.g. ' ')
 word[ __var__ ] =
-    beg_var[ __var__ ]
-    any*
-    end_var[ __var__ ]
+    add_prel[ '#ifdef SIPE_MAIN' ]
+    add_prel[ '#include <string>' ]
+    add_prel[ '#endif // SIPE_MAIN' ]
+    add_attr[ 'std::string __var__;' ]
+    { sipe_data->__var__.clear(); }
+    ( any { sipe_data->__var__ += *data; } )*
 
 # read binary int little endian
 uint32_bin_le[ __val__ ] =
@@ -94,9 +82,24 @@ uint64_bin_le[ __val__, __type__ = 'quint64' ] =
     any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 56; }
 
 # read a string (char *)
-str_sized[ __val__, __len__ ] =
-    add_attr[ 'char *__val__;' 'sipe_data->__val__ = 0;' ]
-    { sipe_data->__val__ = data + 1; data += __len__;  }
+str_sized[ __val__, __len__, __type__ = "std::string" ] =
+    add_attr[ '__type__ __val__;' ]
+    add_attr[ 'int __val___rem;' ]
+    {
+        sipe_data->__val___rem = __len__;
+    jmp_rd___val__:
+        if ( not sipe_data->__val___rem )
+            goto end_rd___val__;
+        if ( data >= end ) {
+            sipe_data->_inp_cont = &&cnt_rd___val__;
+            return 0;
+        }
+    cnt_rd___val__:
+            sipe_data->__val__ += *data;
+            --sipe_data->__val___rem;
+            goto jmp_rd___val__;
+    end_rd___val__: ;
+    }
 
 # size 32 bits then data
 str_32[ __len__ = 'len', __str__ = 'str' ] =

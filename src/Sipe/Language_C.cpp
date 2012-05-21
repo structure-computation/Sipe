@@ -156,6 +156,7 @@ void Language_C::_write_parse_func( std::ostream &os ) {
     on << "";
 
     // blocks
+    Vec<State *> active_marks;
     for( int i = 0; i < block_seq.size(); ++i ) {
         Block *b = block_seq[ i ];
         if ( not b->write )
@@ -182,17 +183,20 @@ void Language_C::_write_parse_func( std::ostream &os ) {
             //
             if ( b->state->set_mark ) {
                 on << "sipe_data->_mark[ " << marks[ b->state ] << " ] = data;";
+                active_marks << b->state;
                 //on << "    std::cout << \"set mark\" << std::endl;";
             }
 
             //
             if ( b->state->use_mark ) {
                 on << "data = sipe_data->_mark[ " << marks[ b->state->use_mark ] << " ];";
+                active_marks.erase( b->state );
                 //on << "    std::cout << \"use mark\" << std::endl;";
             }
 
             //
             if ( b->state->rem_mark ) {
+                active_marks.erase( b->state );
                 //on << "    std::cout << \"rem mark\" << std::endl;";
             }
 
@@ -203,6 +207,7 @@ void Language_C::_write_parse_func( std::ostream &os ) {
                 Cnt c;
                 c.mark = b->mark;
                 c.label = b->label;
+                c.active_marks = active_marks;
                 cnt << c;
             }
         }
