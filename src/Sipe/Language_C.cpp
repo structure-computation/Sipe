@@ -194,19 +194,19 @@ void Language_C::_write_parse_func( std::ostream &os ) {
             //
             if ( b->state->use_mark ) {
                 int nm = marks[ b->state->use_mark ];
-                on << "std::cout << '-' << sipe_data->_mark_data[ " << nm << " ] << '-' << std::endl;";
                 on << "if ( sipe_data->_mark[ " << nm << " ] ) {";
                 on << "    data = sipe_data->_mark[ " << nm << " ];";
                 on << "} else {";
+                on << "    std::cout << '-' << sipe_data->_mark_data[ " << nm << " ] << '-' << std::endl;";
+                on << "    sipe_data->_inp_cont = &&cnt_mark_" << b << ";";
                 on << "    SIPE_CHARP beg = (SIPE_CHARP)sipe_data->_mark_data[ " << nm << " ].data();";
-                on << "    sipe_data->_inp_cont = &&cnt_mark_" << nm << ";";
                 on << "    int res = parse( sipe_data, beg, beg + sipe_data->_mark_data[ " << nm << " ].size() );";
                 on << "    if ( res )";
                 on << "        return res;";
                 on << "    data = beg_data;";
                 on << "    goto *sipe_data->_inp_cont;";
                 on << "}";
-                os << "cnt_mark_" << nm << ":\n";
+                os << "cnt_mark_" << b << ":\n";
             }
 
             //
@@ -245,6 +245,7 @@ void Language_C::_write_parse_func( std::ostream &os ) {
         os << "p_" << i << ":";
         on.first_beg = on.beg + std::min( nb_spaces, 3 + nb_digits( i ) );
         if ( const State *m = cnt[ i ].block->mark ) {
+            // on << "std::cout << *sipe_data->_mark[ " << marks[ m ] << " ] << std::endl;";
             on << "sipe_data->_mark_data[ " << marks[ m ] << " ].append( sipe_data->_mark[ " << marks[ m ] << " ] ? sipe_data->_mark[ " << marks[ m ] << " ] : beg_data, data );";
             on << "sipe_data->_mark[ " << marks[ m ] << " ] = 0;";
         }

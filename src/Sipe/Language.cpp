@@ -43,6 +43,7 @@ Language::Block *Language::_unfold_rec( const State *state, const State *mark, i
 
     res->op_id = 0;
     res->label = -1;
+    res->mark = mark;
     res->write = true;
     res->t_ok  = false;
     res->write_goto = 0;
