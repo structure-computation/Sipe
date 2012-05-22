@@ -197,7 +197,7 @@ void Language_C::_write_parse_func( std::ostream &os ) {
                 on << "if ( sipe_data->_mark[ " << nm << " ] ) {";
                 on << "    data = sipe_data->_mark[ " << nm << " ];";
                 on << "} else {";
-                on << "    std::cout << '-' << sipe_data->_mark_data[ " << nm << " ] << '-' << std::endl;";
+                // on << "    std::cout << '-' << sipe_data->_mark_data[ " << nm << " ] << '-' << std::endl;";
                 on << "    sipe_data->_inp_cont = &&cnt_mark_" << b << ";";
                 on << "    SIPE_CHARP beg = (SIPE_CHARP)sipe_data->_mark_data[ " << nm << " ].data();";
                 on << "    int res = parse( sipe_data, beg, beg + sipe_data->_mark_data[ " << nm << " ].size() );";
