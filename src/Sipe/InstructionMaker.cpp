@@ -4,6 +4,15 @@
 #include <stdlib.h>
 #include <sstream>
 
+static void repl_rec( String &str, const String &src, const String &dst ) {
+    while ( true ) {
+        int p = str.find( src );
+        if ( p < 0 )
+            break;
+        str.replace( p, src.size(), dst );
+    }
+}
+
 static String repl_parm( const Lexem *lex, ErrorList &error_list, String str, const FuncParm &params ) {
     for( int i = 0; i < params.n_params.size(); ++i ) {
         if ( params.n_params[ i ].first == params.n_params[ i ].second )
@@ -17,14 +26,13 @@ static String repl_parm( const Lexem *lex, ErrorList &error_list, String str, co
             continue;
         }
 
-        while ( true ) {
-            // std::cerr << str << " " << params.n_params[ i ].first << " " << params.n_params[ i ].second << std::endl;
-            int p = str.find( params.n_params[ i ].first );
-            if ( p < 0 )
-                break;
-            str.replace( p, params.n_params[ i ].first.size(), params.n_params[ i ].second );
-        }
+        repl_rec( str, params.n_params[ i ].first, params.n_params[ i ].second );
     }
+
+    static int uid = 0;
+    std::ostringstream sl; sl << uid++;
+    repl_rec( str, "$$$uid$$$", sl.str() );
+
     return str;
 }
 
