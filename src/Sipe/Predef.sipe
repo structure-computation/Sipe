@@ -105,6 +105,7 @@ str_sized[ __val__, __len__, __type__ = "std::string" ] =
     add_attr[ 'int __val___rem;' ]
     {
         sipe_data->__val___rem = __len__;
+        sipe_data->__val__.clear();
     jmp_rd___val__$$$uid$$$:
         if ( not sipe_data->__val___rem )
             goto end_rd___val__$$$uid$$$;
