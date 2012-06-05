@@ -99,6 +99,18 @@ uint64_bin_le[ __val__, __type__ = 'quint64' ] =
     any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 48; }
     any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 56; }
 
+# read binary int little endian
+int64_bin_le[ __val__, __type__ = 'qint64' ] =
+    add_attr[ '__type__ __val__;' 'sipe_data->__val__ = 0;' ]
+    any { sipe_data->__val__  = (__type__)*reinterpret_cast<const unsigned char *>( data ) <<  0; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) <<  8; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 16; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 24; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 32; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 40; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 48; }
+    any { sipe_data->__val__ += (__type__)*reinterpret_cast<const unsigned char *>( data ) << 56; }
+
 # read a string (char *)
 str_sized[ __val__, __len__, __type__ = "std::string" ] =
     add_attr[ '__type__ __val__;' ]
