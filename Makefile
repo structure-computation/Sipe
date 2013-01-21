@@ -15,7 +15,10 @@ tsh: cmp
 	./sipe -e tests/http.sipe rec
 
 install:
-	mkdir -p ~/.kde4/share/apps/katepart/syntax
-	ln -s sipe.xml ~/.kde4/share/apps/katepart/syntax
+	mkdir -p          ~/.kde4/share/apps/katepart/syntax
+	ln    -s sipe.xml ~/.kde4/share/apps/katepart/syntax
+
+clean:
+	rm src/Sipe/compilations/*
 
 .PHONY: cmp
